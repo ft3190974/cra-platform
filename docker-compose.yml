@@ -1,0 +1,24 @@
+# ⚠ 默认配置为「本地演示」用途：放行不安全 secret + 创建弱密码演示账号。
+# 生产部署务必：设强随机 CRA_SECRET_KEY、CRA_ALLOW_INSECURE_SECRET=false、
+# CRA_ALLOW_DEMO_ACCOUNTS=false、CRA_CORS_ORIGINS=你的域名。
+services:
+  cra-platform:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # 演示环境放行（生产请替换为强随机值并关闭下方两个开关）
+      CRA_SECRET_KEY: "change-me-in-production"
+      CRA_ALLOW_INSECURE_SECRET: "true"
+      CRA_ALLOW_DEMO_ACCOUNTS: "true"
+      CRA_DATABASE_URL: "sqlite:////app/data/cra.db"
+      CRA_UPLOAD_DIR: "/app/data/uploads"
+      CRA_CORS_ORIGINS: "*"
+    volumes:
+      - cra-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  cra-data:

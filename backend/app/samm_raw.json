@@ -1,0 +1,557 @@
+{
+ "治理": {
+  "SM": {
+   "name": "战略与指标",
+   "questions": [
+    {
+     "code": "SM1",
+     "question": "是否有软件安全保证计划？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "开发人员是否了解保证计划的未来计划？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "业务干系人是否了解贵组织的风险状况？",
+     "indicators": []
+    },
+    {
+     "code": "SM2",
+     "question": "您的许多应用程序和资源是否按风险分类？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "风险评级是否用于调整所需的保证活动？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "组织是否知道基于风险评级的要求？",
+     "indicators": []
+    },
+    {
+     "code": "SM3",
+     "question": "是否收集了每个项目的保证活动成本数据？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "您的组织是否定期将您的安全支出与其他组织进行比较？",
+     "indicators": []
+    }
+   ]
+  },
+  "PC": {
+   "name": "政策与合规",
+   "questions": [
+    {
+     "code": "PC1",
+     "question": "项目参与者知道他们的项目的合规状态吗？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否特别考虑了合规要求？",
+     "indicators": []
+    },
+    {
+     "code": "PC2",
+     "question": "组织是否使用一套政策和标准来控制软件开发？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否能够要求对政策和标准的符合性进行审计？",
+     "indicators": []
+    },
+    {
+     "code": "PC3",
+     "question": "是否定期对项目进行审计，以确保符合政策和标准的基线？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "组织是否有系统地使用审计来收集和控制合规证据？",
+     "indicators": []
+    }
+   ]
+  },
+  "EG": {
+   "name": "教育与指导",
+   "questions": [
+    {
+     "code": "EG1",
+     "question": "开发人员是否接受过高级安全意识培训？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "每个项目团队是否都知道在哪里可以找到安全的开发最佳实践和指导？",
+     "indicators": []
+    },
+    {
+     "code": "EG2",
+     "question": "参与开发过程的人员是否接受了针对特定角色的安全培训和指导？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "利益相关者是否能够在项目中聘请安全教授？",
+     "indicators": []
+    },
+    {
+     "code": "EG3",
+     "question": "与安全相关的指导是否在整个组织中得到集中控制并一致分发？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "开发人员是否经过测试以确保安全开发实践的基线技能集？",
+     "indicators": []
+    }
+   ]
+  }
+ },
+ "构建": {
+  "TA": {
+   "name": "威胁评估",
+   "questions": [
+    {
+     "code": "TA1",
+     "question": "组织中的项目是否考虑并记录可能的威胁？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "贵组织是否了解并记录其面临的攻击者类型？",
+     "indicators": []
+    },
+    {
+     "code": "TA2",
+     "question": "项目团队是否定期分析功能需求以防止可能的滥用？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否使用评估威胁的方法进行相对比较？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "利益相关者是否意识到相关的威胁和评级？",
+     "indicators": []
+    },
+    {
+     "code": "TA3",
+     "question": "项目团队是否特别考虑来自外部软件的风险？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "大多数保护机制和控制是否被捕获并映射回威胁？",
+     "indicators": []
+    }
+   ]
+  },
+  "SR": {
+   "name": "安全需求",
+   "questions": [
+    {
+     "code": "SR1",
+     "question": "项目团队是否在开发过程中指定了安全需求？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否从最佳实践和合规指导中提取需求？",
+     "indicators": []
+    },
+    {
+     "code": "SR2",
+     "question": "利益相关者是否审查相关项目的访问控制矩阵？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否根据其他安全活动的反馈来指定需求？",
+     "indicators": []
+    },
+    {
+     "code": "SR3",
+     "question": "利益相关者是否审查供应商协议的安全要求？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "是否按照项目组规定的安全要求进行审核？",
+     "indicators": []
+    }
+   ]
+  },
+  "SA": {
+   "name": "安全架构",
+   "questions": [
+    {
+     "code": "SA1",
+     "question": "项目组是否提供了推荐的第三方组件列表？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否了解安全设计原则，并且是否始终如一地应用这些原则？",
+     "indicators": []
+    },
+    {
+     "code": "SA2",
+     "question": "您是否为项目团队宣传共享安全服务并提供指导？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否根据其应用程序体系结构提供了规定的设计模式？",
+     "indicators": []
+    },
+    {
+     "code": "SA3",
+     "question": "项目团队是否从集中控制的平台和框架构建软件？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "是否审核项目团队使用安全架构组件？",
+     "indicators": []
+    }
+   ]
+  }
+ },
+ "其他": {
+  "SB": {
+   "name": "SB",
+   "questions": [
+    {
+     "code": "SB1",
+     "question": "构建过程是否记录在案并保持一致？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "所有的应用程序组件都被识别和记录了吗？",
+     "indicators": []
+    },
+    {
+     "code": "SB2",
+     "question": "构建过程是否完全自动化并且不需要开发人员的干预？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "所有组件和库是否定期检查已知的安全漏洞和许可问题？",
+     "indicators": []
+    },
+    {
+     "code": "SB3",
+     "question": "安全缺陷是否会触发生成停止执行？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "组件和库是否独立扫描漏洞？",
+     "indicators": []
+    }
+   ]
+  },
+  "SD": {
+   "name": "SD",
+   "questions": [
+    {
+     "code": "SD1",
+     "question": "部署是自动化的还是由开发人员以外的人完成的？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "配置文件有版本吗？",
+     "indicators": []
+    },
+    {
+     "code": "SD2",
+     "question": "是否在部署中集成安全验证（例如二进制静态代码分析/AV扫描）？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "配置文件是否不包含未加密的敏感配置信息？",
+     "indicators": []
+    },
+    {
+     "code": "SD3",
+     "question": "是否所有代码都进行了数字签名，并且在部署阶段验证了签名？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "部署过程是否自动生成/初始化凭据和身份验证密钥？",
+     "indicators": []
+    }
+   ]
+  },
+  "DM": {
+   "name": "DM",
+   "questions": [
+    {
+     "code": "DM1",
+     "question": "是否跟踪所有缺陷（缺陷/缺陷/过程）？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "公司是否计算并共享基本指标，如总计数？",
+     "indicators": []
+    },
+    {
+     "code": "DM2",
+     "question": "是否存在基于缺陷安全等级的SLA分配？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否根据其应用程序体系结构提供了规定的设计模式？",
+     "indicators": []
+    },
+    {
+     "code": "DM3",
+     "question": "公司是否衡量并强制遵守SLA？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "是否审核项目团队使用安全架构组件？",
+     "indicators": []
+    }
+   ]
+  },
+  "AA": {
+   "name": "AA",
+   "questions": [
+    {
+     "code": "AA1",
+     "question": "项目团队是否记录软件设计的攻击范围？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否根据已知的安全风险检查软件设计？",
+     "indicators": []
+    },
+    {
+     "code": "AA2",
+     "question": "项目团队是否专门分析安全机制的设计元素？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目干系人是否知道如何获得正式的安全设计评审？",
+     "indicators": []
+    },
+    {
+     "code": "AA3",
+     "question": "安全设计评审过程是否包含详细的数据级分析？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "安全设计评审结果是否存在最低安全基线？",
+     "indicators": []
+    },
+    {
+     "code": "RDT1",
+     "question": "项目团队是否有基于常见安全相关问题的审查清单？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目组是否审查选定的高风险代码？",
+     "indicators": []
+    },
+    {
+     "code": "RDT2",
+     "question": "项目团队能否访问自动代码分析工具来发现安全问题？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "涉众是否一致地评审代码评审的结果？",
+     "indicators": []
+    },
+    {
+     "code": "RDT3",
+     "question": "项目团队是否利用自动化来对照特定于应用程序的编码标准检查代码？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "代码审查结果是否存在最低安全基线？",
+     "indicators": []
+    }
+   ]
+  }
+ },
+ "验证": {
+  "ST": {
+   "name": "安全测试",
+   "questions": [
+    {
+     "code": "ST1",
+     "question": "项目是否根据定义的安全需求指定安全测试？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "在发布前是否对高风险项目进行了渗透测试？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "在发布之前，涉众是否知道安全测试状态？",
+     "indicators": []
+    },
+    {
+     "code": "ST2",
+     "question": "项目是否使用自动化来评估安全测试用例？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目是否遵循一个一致的过程来评估和向涉众报告安全测试？",
+     "indicators": []
+    },
+    {
+     "code": "ST3",
+     "question": "是否为特定于应用程序的逻辑综合生成安全测试用例？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "安全测试是否存在最低安全基线？",
+     "indicators": []
+    }
+   ]
+  }
+ },
+ "部署": {
+  "IM": {
+   "name": "问题管理",
+   "questions": [
+    {
+     "code": "IM1",
+     "question": "项目是否有安全问题或事件的联系人？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "贵公司是否有指定的安全响应小组？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否了解其联络和响应团队的安全点？",
+     "indicators": []
+    },
+    {
+     "code": "IM2",
+     "question": "组织是否使用一致的事件报告和处理流程？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目参与者是否了解与其软件项目相关的安全信息披露？",
+     "indicators": []
+    },
+    {
+     "code": "IM3",
+     "question": "是否检查事件的根本原因以产生进一步的建议？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目是否一致地收集和报告与事故相关的数据和指标？",
+     "indicators": []
+    }
+   ]
+  },
+  "EH": {
+   "name": "环境加固",
+   "questions": [
+    {
+     "code": "EH1",
+     "question": "项目是否记录了操作环境安全要求？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目是否检查第三方软件组件的安全更新？",
+     "indicators": []
+    },
+    {
+     "code": "EH2",
+     "question": "是否使用一致的过程对关键依赖项应用升级和修补程序？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目是否利用自动化来检查应用程序和环境的健康状况？",
+     "indicators": []
+    },
+    {
+     "code": "EH3",
+     "question": "利益相关者是否知道在运行过程中使用其他工具保护软件的选项？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "是否存在环境运行状况（版本控制、修补等）的最低安全基线？",
+     "indicators": []
+    }
+   ]
+  },
+  "OE": {
+   "name": "运维支持",
+   "questions": [
+    {
+     "code": "OE1",
+     "question": "每个软件版本都有安全说明吗？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "是否按项目记录了与安全相关的警报和错误条件？",
+     "indicators": []
+    },
+    {
+     "code": "OE2",
+     "question": "项目是否使用了一个很好理解的变更管理过程？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "项目团队是否在每次产品发布时提供操作安全指南？",
+     "indicators": []
+    },
+    {
+     "code": "OE3",
+     "question": "是否审核项目发布以获取适当的操作安全信息？",
+     "indicators": []
+    },
+    {
+     "code": null,
+     "question": "代码签名是否经常使用一致的过程在软件组件上执行？",
+     "indicators": []
+    }
+   ]
+  }
+ }
+}

@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRA 合规平台（华南Test）</title>
+<script src="/static/vendor/vue.js"></script>
+<link rel="stylesheet" href="/static/vendor/tailwind-local.css">
+<script src="/static/vendor/echarts.js"></script>
+<style>
+  [v-cloak]{display:none}
+  ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  .doc-content h1{font-size:1.5rem;font-weight:700;margin:.6em 0}
+  .doc-content h2{font-size:1.15rem;font-weight:600;margin:.5em 0;color:#1e40af}
+  .doc-content p{margin:.4em 0;line-height:1.7}
+  .doc-content pre{background:#f8fafc;padding:1em;border-radius:8px;overflow:auto;font-size:12px}
+</style>
+</head>
+<body class="bg-slate-100">
+<div id="app" v-cloak>
+  <!-- 登录页 -->
+  <div v-if="!token" class="min-h-screen flex items-center justify-center">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-96">
+      <div class="text-center mb-6">
+        <div class="text-3xl font-bold text-blue-700">CRA 合规平台（华南Test）</div>
+        <div class="text-sm text-slate-500 mt-1">欧盟网络弹性法案 · 产品合规</div>
+      </div>
+      <input v-model="login.username" placeholder="用户名" class="w-full border rounded-lg px-3 py-2 mb-3"/>
+      <input v-model="login.password" type="password" placeholder="密码" @keyup.enter="doLogin" class="w-full border rounded-lg px-3 py-2 mb-3"/>
+      <button @click="doLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-medium">登录</button>
+      <div v-if="loginErr" class="text-red-500 text-sm mt-3 text-center">{{loginErr}}</div>
+      <div class="text-xs text-slate-400 mt-4 text-center">演示账号：admin / admin123</div>
+      <div v-if="isGH" class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
+        <div class="text-xs font-medium text-amber-700 mb-2">检测到 GitHub Pages 部署，请配置后端地址：</div>
+        <input v-model="apiBase" placeholder="http://localhost:8090" class="w-full border rounded px-2 py-1 text-xs mb-2"/>
+        <button @click="saveApiBase" class="w-full bg-amber-500 hover:bg-amber-600 text-white rounded py-1 text-xs">保存并重新加载</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 主界面 -->
+  <div v-else class="flex h-screen">
+    <!-- 侧边栏 -->
+    <aside class="w-56 bg-slate-900 text-slate-200 flex flex-col">
+      <div class="p-4 text-lg font-bold text-white border-b border-slate-700">CRA 合规平台（华南Test）</div>
+      <nav class="flex-1 overflow-y-auto py-2">
+        <a v-for="m in menus" :key="m.k" @click="view=m.k"
+           :class="['flex items-center gap-2 px-4 py-2.5 cursor-pointer text-sm', view===m.k?'bg-blue-600 text-white':'hover:bg-slate-800']">
+          <span>{{m.icon}}</span>{{m.label}}
+        </a>
+      </nav>
+      <div class="p-3 border-t border-slate-700 text-xs">
+        <div>{{user.full_name}} ({{roleLabel(user.role)}})</div>
+        <a @click="logout" class="text-blue-400 cursor-pointer">退出登录</a>
+      </div>
+    </aside>
+
+    <!-- 内容区 -->
+    <main class="flex-1 overflow-y-auto">
+      <!-- 全局加载条 -->
+      <div v-if="loading" class="fixed top-0 left-0 right-0 z-50 h-1 bg-blue-200 overflow-hidden" style="transition:opacity .2s">
+        <div class="h-full bg-blue-600 animate-pulse" style="width:60%"></div>
+      </div>
+      <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center sticky top-0 z-10">
+        <h1 class="text-xl font-semibold text-slate-800">{{menuLabel}}</h1>
+        <div class="text-sm text-slate-500" v-if="curNode">当前对象：<span class="font-medium text-blue-700">{{curNode.name}}</span></div>
+      </header>
+      <div class="p-6">
+
+        <!-- 仪表盘 -->
+        <div v-if="view==='dashboard'">
+          <div class="grid grid-cols-4 gap-4 mb-6">
+            <div v-for="c in dashCards" :key="c.label" class="bg-white rounded-xl p-4 shadow-sm">
+              <div class="text-3xl font-bold" :class="c.color">{{c.value}}</div>
+              <div class="text-sm text-slate-500 mt-1">{{c.label}}</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">漏洞严重程度分布</div><div ref="sevChart" style="height:280px"></div></div>
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">各产品合规就绪度</div><div ref="readyChart" style="height:280px"></div></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-sm mt-4" v-if="dash.report_alerts && dash.report_alerts.length">
+            <div class="font-medium mb-2 text-red-600">⚠ 通报时限提醒（CRA 第14条）</div>
+            <div v-for="(a,i) in dash.report_alerts" :key="i" class="text-sm py-1 flex gap-3">
+              <span class="px-2 rounded text-xs" :class="a.status==='overdue'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700'">{{a.status==='overdue'?'已逾期':'待提交'}}</span>
+              <span>{{reportLabel(a.type)}} → {{a.target}}</span><span class="text-slate-400">截止 {{fmtDate(a.due_at)}}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 合规对象树 -->
+        <div v-if="view==='nodes'" class="flex gap-4">
+          <div class="w-1/3 bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+              <span class="font-medium">组织/产品树</span>
+              <button @click="openNodeModal(null)" class="text-xs bg-blue-600 text-white px-2 py-1 rounded">+ 事业部</button>
+            </div>
+            <tree-node v-for="n in tree" :key="n.id" :node="n" :cur="curNode" @select="selectNode" @add="openNodeModal"></tree-node>
+          </div>
+          <div class="flex-1 bg-white rounded-xl p-5 shadow-sm" v-if="overview">
+            <div class="flex justify-between items-start">
+              <div>
+                <div class="text-xl font-semibold">{{overview.node.name}}</div>
+                <div class="text-sm text-slate-500">{{typeLabel(overview.node.node_type)}} · {{overview.node.code}}</div>
+              </div>
+              <div class="flex gap-2">
+                <button @click="openNodeModal(overview.node,true)" class="text-xs border px-2 py-1 rounded">编辑</button>
+                <button @click="delNode(overview.node)" class="text-xs border border-red-300 text-red-600 px-2 py-1 rounded">删除</button>
+              </div>
+            </div>
+            <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div class="text-sm font-medium text-blue-800">CRA 产品分类：{{craClassLabel(overview.node.cra_class)}}</div>
+              <div class="text-xs text-blue-600 mt-1">符合性路径：{{overview.conformity.path}}（合格评定模块 {{overview.conformity.module}}{{overview.conformity.notified_body?' · 需公告机构':''}}）</div>
+            </div>
+            <div class="grid grid-cols-4 gap-3 mt-4">
+              <div class="border rounded-lg p-3"><div class="text-2xl font-bold text-blue-600">{{overview.latest_readiness ?? '—'}}<span class="text-sm">%</span></div><div class="text-xs text-slate-500">合规就绪度</div></div>
+              <div class="border rounded-lg p-3"><div class="text-2xl font-bold text-emerald-600">{{overview.latest_score ?? '—'}}</div><div class="text-xs text-slate-500">成熟度评分</div></div>
+              <div class="border rounded-lg p-3"><div class="text-2xl font-bold text-amber-600">{{overview.vuln_open}}</div><div class="text-xs text-slate-500">未关闭漏洞</div></div>
+              <div class="border rounded-lg p-3"><div class="text-2xl font-bold text-red-600">{{overview.vuln_critical}}</div><div class="text-xs text-slate-500">严重漏洞</div></div>
+            </div>
+            <div class="mt-4 flex gap-2 flex-wrap">
+              <button @click="gotoAssess(overview.node)" class="text-sm bg-blue-600 text-white px-3 py-1.5 rounded">发起/查看 CRA 评估</button>
+              <button @click="view='vulns'" class="text-sm border px-3 py-1.5 rounded">漏洞管理</button>
+              <button @click="view='documents'" class="text-sm border px-3 py-1.5 rounded">文档与模板</button>
+            </div>
+            <div class="mt-4" v-if="overview.node.node_type==='product'">
+              <div class="font-medium text-sm mb-2">附件 / 合规证据</div>
+              <attachments owner_type="node" :owner_id="overview.node.id" :api="api"></attachments>
+            </div>
+          </div>
+          <div v-else class="flex-1 flex items-center justify-center text-slate-400">请选择左侧节点查看合规概览</div>
+        </div>
+
+        <!-- CRA 评估 -->
+        <!-- CRA 评估 / SAMM 评估 共享编辑器 -->
+        <div v-if="view==='assess' || view==='samm'">
+          <!-- 列表 -->
+          <div v-if="!curAssessment" class="bg-white rounded-xl p-5 shadow-sm">
+            <div class="flex justify-between mb-3">
+              <span class="font-medium">{{view==='samm'?'SAMM 成熟度评估列表':'CRA 评估列表'}}</span>
+              <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
+            <div v-if="view==='samm'" class="text-xs text-slate-500 mb-3 p-2 bg-blue-50 rounded">OWASP SAMM v2：5 大业务功能 × 15 实践 × 3 等级。每个评估步骤均可上传文档记录并填写备注。提交后成熟度分将自动折算并入 CRA 评估体系。</div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>状态</th><th>{{view==='samm'?'成熟度':'就绪度'}}</th><th>评分</th><th></th></tr></thead>
+              <tbody><tr v-for="a in assessments" :key="a.id" class="border-b hover:bg-slate-50">
+                <td class="py-2">{{a.title}}</td><td>{{statusLabel(a.status)}}</td>
+                <td>{{a.readiness}}%</td><td>{{a.score}}</td>
+                <td><button @click="openAssessment(a.id)" class="text-blue-600">打开</button></td></tr></tbody>
+            </table>
+            <div v-if="!assessments.length && !curNode" class="text-center text-slate-400 py-6">请先在「合规对象树」选择一个节点</div>
+          </div>
+          <!-- 编辑器（CRA 与 SAMM 共用，按 framework_type 调整等级数与附件） -->
+          <div v-else>
+            <button @click="curAssessment=null;loadAssessments()" class="text-sm text-blue-600 mb-3">← 返回列表</button>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="col-span-2 bg-white rounded-xl p-5 shadow-sm">
+                <div class="font-medium mb-3">{{curAssessment.title}}
+                  <span class="text-xs px-2 py-0.5 rounded ml-2" :class="isSamm?'bg-amber-100 text-amber-700':'bg-blue-100 text-blue-700'">{{isSamm?'SAMM v2':'CRA'}}</span></div>
+                <div v-for="d in controlItems" :key="d.domain.id" class="mb-5">
+                  <div class="font-medium text-blue-700 text-sm mb-2 border-b pb-1">{{d.domain.name}} <span class="text-xs text-slate-400">({{d.domain.samm_function}})</span></div>
+                  <div v-for="it in d.items" :key="it.id" class="mb-3 p-3 rounded-lg bg-slate-50">
+                    <div class="text-sm font-medium">{{it.code}} {{it.title}}</div>
+                    <div class="text-xs text-slate-500 mt-1">{{it.question}}</div>
+                    <div class="text-xs text-blue-500 mt-1">{{it.cra_ref}}</div>
+                    <div class="flex items-center gap-2 mt-2">
+                      <span class="text-xs text-slate-500">{{isSamm?'成熟度等级':'满足程度'}}：</span>
+                      <button v-for="lv in (it.max_level+1)" :key="lv" @click="setLevel(it,lv-1)"
+                        :class="['w-7 h-7 rounded text-xs', (answers[it.id]?.level??0)===lv-1?'bg-blue-600 text-white':'bg-white border']">{{lv-1}}</button>
+                      <span class="text-xs text-slate-400 ml-2" :title="it.guidance">ⓘ 分级说明</span>
+                    </div>
+                    <!-- 每个步骤：备注 + 文档上传（SAMM 必备，CRA 亦可用）-->
+                    <div class="mt-2">
+                      <textarea v-model="noteOf(it).note" @blur="saveNote(it)" rows="1"
+                        :placeholder="'备注 / 评估说明'" class="w-full text-xs border rounded px-2 py-1"></textarea>
+                      <div class="mt-1">
+                        <step-attach v-if="answers[it.id]?.answer_id" :answer_id="answers[it.id].answer_id" :api="api"></step-attach>
+                        <span v-else class="text-xs text-slate-400">（先选择等级或填写备注，即可上传该步骤的文档记录）</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex gap-2">
+                  <button @click="submitAssessment" class="bg-emerald-600 text-white px-4 py-2 rounded text-sm">提交评估</button>
+                  <button v-if="!isSamm && (user.role==='admin'||user.role==='manager')" @click="approveAssessment" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">合规评审通过</button>
+                </div>
+              </div>
+              <div class="space-y-4">
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                  <div class="font-medium text-sm mb-2">{{isSamm?'SAMM 成熟度雷达':'成熟度雷达'}}</div><div ref="radarChart" style="height:240px"></div>
+                  <div class="text-center"><span class="text-2xl font-bold text-blue-600">{{curAssessment.readiness}}%</span><span class="text-xs text-slate-500">{{isSamm?' 成熟度':' 就绪度'}}</span></div>
+                </div>
+                <div v-if="!isSamm" class="bg-white rounded-xl p-4 shadow-sm">
+                  <div class="font-medium text-sm mb-2">整改方向建议</div>
+                  <button @click="loadRemediation" class="text-xs bg-blue-600 text-white px-2 py-1 rounded mb-2">生成整改建议</button>
+                  <div v-for="(r,i) in remediation" :key="i" class="text-xs border-l-2 border-amber-400 pl-2 mb-2">
+                    <div class="font-medium flex justify-between items-center">
+                      <span>{{r.item_code}} {{r.item_title}}（当前{{r.current_level}}级）</span>
+                      <button v-if="!r.task_id" @click="remediationToTask(r)" class="text-[10px] bg-emerald-600 text-white px-1.5 py-0.5 rounded hover:bg-emerald-700">转任务</button>
+                      <span v-else class="text-[10px] text-emerald-600">已转任务#{{r.task_id}}</span>
+                    </div>
+                    <div class="text-slate-500">{{r.advice}}</div>
+                    <div class="text-blue-600">推荐：{{(r.recommended_tools||[]).join('、')}}</div>
+                  </div>
+                </div>
+                <div v-else class="bg-white rounded-xl p-4 shadow-sm text-xs text-slate-600">
+                  <div class="font-medium text-sm mb-1 text-slate-800">SAMM → CRA 联动</div>
+                  提交本 SAMM 评估后，其平均成熟度（0-3）将自动折算为 CRA 0-5 分，写入对应产品 CRA 评估的「软件安全成熟度」项。
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 漏洞管理 -->
+        <div v-if="view==='vulns'">
+          <div class="flex gap-2 mb-3">
+            <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 录入漏洞</button>
+            <button @click="view='reports'" class="text-xs border px-3 py-1.5 rounded">通报时限看板</button>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>来源</th><th>严重度</th><th>CVSS</th><th>状态</th><th>已被利用</th><th></th></tr></thead>
+              <tbody><tr v-for="v in vulns" :key="v.id" class="border-b hover:bg-slate-50">
+                <td class="py-2">{{v.title}}<span class="text-xs text-slate-400 ml-1">{{v.cve_id}}</span></td>
+                <td><span class="text-xs px-1.5 py-0.5 bg-slate-100 rounded">{{v.source.toUpperCase()}}</span></td>
+                <td><span :class="sevClass(v.severity)">{{sevLabel(v.severity)}}</span></td>
+                <td>{{v.cvss_score}}</td><td>{{vulnStatusLabel(v.status)}}</td>
+                <td>{{v.exploited?'是':'否'}}</td>
+                <td><button @click="editVuln(v)" class="text-blue-600 text-xs">编辑</button></td></tr></tbody>
+            </table>
+            <div v-if="!vulns.length" class="text-center text-slate-400 py-6">暂无漏洞。可录入或在「集成」中从检测工具同步。</div>
+          </div>
+        </div>
+
+        <!-- 通报看板 -->
+        <div v-if="view==='reports'">
+          <button @click="view='vulns'" class="text-sm text-blue-600 mb-3">← 返回漏洞</button>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="font-medium mb-3">CRA 第14条 漏洞/事件通报时限看板</div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">漏洞</th><th>阶段</th><th>提交目标</th><th>剩余时间</th><th>状态</th><th></th></tr></thead>
+              <tbody><tr v-for="r in reports" :key="r.id" class="border-b">
+                <td class="py-2">{{r.vuln}} {{r.cve}}</td><td>{{reportLabel(r.report_type)}}</td><td>{{r.target}}</td>
+                <td :class="r.hours_remaining<0?'text-red-600':'text-slate-700'">{{r.hours_remaining!=null?(r.hours_remaining<0?'已逾期':r.hours_remaining+' 小时'):'—'}}</td>
+                <td><span class="text-xs px-1.5 py-0.5 rounded" :class="repStatusClass(r.status)">{{repStatusLabel(r.status)}}</span></td>
+                <td><button v-if="r.status!=='sent'" @click="sendReport(r.id)" class="text-blue-600 text-xs">标记已提交</button></td></tr></tbody>
+            </table>
+            <div v-if="!reports.length" class="text-center text-slate-400 py-6">暂无通报任务（录入「已被利用」的漏洞将自动生成 24h/72h/14d 通报单）。</div>
+          </div>
+        </div>
+
+        <!-- 风险登记册 -->
+        <div v-if="view==='risks'">
+          <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" :disabled="!curNode">+ 登记风险</button>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">风险</th><th>类别</th><th>固有</th><th>剩余</th><th>处置</th><th>状态</th></tr></thead>
+              <tbody><tr v-for="r in risks" :key="r.id" class="border-b"><td class="py-2">{{r.title}}</td><td>{{r.category}}</td>
+                <td>{{r.inherent_score}}</td><td>{{r.residual_score}}</td><td>{{r.treatment}}</td><td>{{r.status}}</td></tr></tbody>
+            </table>
+            <div v-if="!risks.length" class="text-center text-slate-400 py-6">暂无风险条目</div>
+          </div>
+        </div>
+
+        <!-- 文档与模板 -->
+        <div v-if="view==='documents'" class="grid grid-cols-3 gap-4">
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="font-medium mb-2">样板模板库</div>
+            <div v-for="t in templates" :key="t.id" class="p-2 rounded hover:bg-slate-50 cursor-pointer border-b" @click="genFromTemplate(t)">
+              <div class="text-sm font-medium">{{t.name}}</div>
+              <div class="text-xs text-slate-400">{{t.cra_ref}} · {{t.stage}}</div>
+            </div>
+          </div>
+          <div class="col-span-2 bg-white rounded-xl p-4 shadow-sm">
+            <div class="flex justify-between mb-2"><span class="font-medium">已生成文档</span>
+              <span class="text-xs text-slate-400" v-if="!curNode">点击左侧模板生成（需先在对象树选择节点）</span></div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody><tr v-for="d in documents" :key="d.id" class="border-b">
+                <td class="py-2">{{d.title}}</td><td>{{d.doc_type}}</td><td>{{statusLabel(d.status)}}</td>
+                <td class="flex gap-2 py-1">
+                  <button @click="viewDoc(d.id)" class="text-blue-600 text-xs">查看</button>
+                  <button @click="exportDoc(d.id,'docx')" class="text-emerald-600 text-xs">导出Word</button>
+                  <button @click="exportDoc(d.id,'json')" class="text-slate-500 text-xs">JSON</button>
+                </td></tr></tbody>
+            </table>
+            <div v-if="!documents.length" class="text-center text-slate-400 py-6">暂无文档</div>
+          </div>
+        </div>
+
+        <!-- 集成 -->
+        <div v-if="view==='integrations'">
+          <button @click="newIntegration" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3">+ 新建集成</button>
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">名称</th><th>类型</th><th>端点</th><th>上次同步</th><th></th></tr></thead>
+              <tbody><tr v-for="i in integrations" :key="i.id" class="border-b">
+                <td class="py-2">{{i.name}}</td><td><span class="text-xs px-1.5 py-0.5 bg-slate-100 rounded">{{i.kind}}</span></td>
+                <td class="text-xs text-slate-400">{{i.endpoint||'（mock）'}}</td><td class="text-xs">{{i.last_sync_at?fmtDate(i.last_sync_at):'—'}}</td>
+                <td><button @click="syncIntegration(i.id)" class="text-blue-600 text-xs">立即同步</button></td></tr></tbody>
+            </table>
+          </div>
+          <div class="text-xs text-slate-400 mt-2">检测工具(SAST/SCA/BAT/FUZZ)同步为 mock 演示数据；漏洞公开平台为真实 HTTP 拉取骨架，配置 endpoint 后按平台字段映射启用。</div>
+        </div>
+
+        <!-- 审计日志 -->
+        <div v-if="view==='audit'">
+          <div class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="font-medium mb-3">操作审计日志</div>
+            <table class="w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">时间</th><th>用户</th><th>操作</th><th>资源</th><th>详情</th></tr></thead>
+              <tbody><tr v-for="a in auditLogs" :key="a.id" class="border-b">
+                <td class="py-2 text-xs">{{fmtDate(a.created_at)}}</td><td>{{a.username}}</td>
+                <td><span class="text-xs px-1.5 py-0.5 rounded bg-slate-100">{{a.action}}</span></td>
+                <td>{{a.resource_type}}#{{a.resource_id}}</td><td class="text-xs text-slate-400">{{JSON.stringify(a.detail)}}</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ═══════════ V2 新增模块 ═══════════ -->
+
+        <!-- 高管态势 -->
+        <div v-if="view==='dashboard-v2'">
+          <div class="grid grid-cols-5 gap-4 mb-6">
+            <div v-for="c in dashv2Cards" :key="c.label" class="bg-white rounded-xl p-4 shadow-sm">
+              <div class="text-2xl font-bold" :class="c.color">{{c.value}}</div><div class="text-xs text-slate-500 mt-1">{{c.label}}</div>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">产品就绪度排行</div><div ref="ready2Chart" style="height:300px"></div></div>
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">实时告警</div>
+              <div v-for="a in dashv2.alerts" :key="a.id" class="text-sm py-1.5 border-b flex gap-2">
+                <span :class="{'text-red-600':a.type==='vuln_overdue'||a.type==='critical_vuln','text-amber-600':a.type==='pending_approval'}">{{a.message}}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 工作流审批 -->
+        <div v-if="view==='workflow'">
+          <div class="flex gap-2 mb-4"><button @click="newWF" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">新建审批</button></div>
+          <div class="bg-white rounded-xl shadow-sm">
+            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">标题</th><th>类型</th><th>状态</th><th>当前步骤</th><th>提交人</th><th>操作</th></tr></thead>
+            <tbody><tr v-for="w in workflows" :key="w.id" class="border-b">
+              <td class="py-2 px-4">{{w.title}}</td><td>{{w.ref_type}}</td>
+              <td><span :class="wfStatusCls(w.status)">{{w.status}}</span></td>
+              <td>{{w.current_step}}/{{(w.steps||[]).length}}</td><td>{{w.submitted_by}}</td>
+              <td><button v-if="w.status==='submitted'" @click="approveWF(w.id)" class="text-emerald-600 text-xs">批准</button>
+                <button v-if="w.status==='submitted'" @click="rejectWF(w.id)" class="text-red-500 text-xs ml-2">驳回</button>
+                <button v-if="w.status==='draft'" @click="submitWF(w.id)" class="text-blue-600 text-xs">提交</button></td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 供应商门户 -->
+        <div v-if="view==='supplier'">
+          <div class="flex gap-2 mb-4"><button @click="newSupplier" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">新增供应商</button></div>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">供应商列表</div>
+              <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th>名称</th><th>类型</th><th>风险</th><th>操作</th></tr></thead>
+              <tbody><tr v-for="s in suppliers" :key="s.id" class="border-b"><td class="py-1">{{s.name}}</td><td>{{s.type}}</td><td>{{s.risk_level}}</td>
+                <td><button @click="grantSupplierAccess(s)" class="text-blue-600 text-xs mr-2">生成访问令牌</button><button @click="editSupplier(s)" class="text-slate-400 text-xs">编辑</button></td></tr></tbody></table></div>
+            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">供应商提交</div>
+              <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th>标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
+              <tbody><tr v-for="s in supplierSubs" :key="s.id" class="border-b"><td class="py-1">{{s.title}}</td><td>{{s.form_type}}</td><td>{{s.status}}</td>
+                <td><button v-if="s.status==='submitted'" @click="reviewSubmission(s,'approved')" class="text-emerald-600 text-xs">通过</button>
+                  <button v-if="s.status==='submitted'" @click="reviewSubmission(s,'rejected')" class="text-red-500 text-xs ml-2">驳回</button></td></tr></tbody></table></div>
+          </div>
+        </div>
+
+        <!-- SBOM 管理 -->
+        <div v-if="view==='sbom'">
+          <div class="flex gap-2 mb-4"><input type="file" @change="importSbom" class="text-sm"/><button @click="exportSbom" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm">导出 SBOM</button></div>
+          <div class="bg-white rounded-xl shadow-sm">
+            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">文件名</th><th>格式</th><th>组件数</th><th>漏洞匹配</th><th>时间</th></tr></thead>
+            <tbody><tr v-for="r in sbomRecords" :key="r.id" class="border-b"><td class="py-2 px-4">{{r.filename}}</td><td>{{r.format}}</td><td>{{r.component_count}}</td><td class="text-red-600">{{r.vuln_matched_count}}</td><td>{{fmtDate(r.created_at)}}</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 许可证扫描 -->
+        <div v-if="view==='license'">
+          <div class="flex gap-2 mb-4"><button @click="runLicenseScan(false)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">快速扫描</button><button @click="runLicenseScan(true)" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm">深度扫描</button></div>
+          <div v-if="licenseResult" class="bg-white rounded-xl p-4 shadow-sm mb-4"><div class="font-medium">扫描结果: <span :class="'text-'+licenseRiskCls(licenseResult.risk_level)">{{licenseResult.risk_level}}</span></div>
+            <div class="text-sm text-slate-500">依赖: {{licenseResult.total_deps}} | 冲突: {{licenseResult.conflicts}}</div></div>
+          <div class="bg-white rounded-xl shadow-sm">
+            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">时间</th><th>类型</th><th>依赖数</th><th>风险</th><th>冲突</th></tr></thead>
+            <tbody><tr v-for="r in licenseScans" :key="r.id" class="border-b"><td class="py-2 px-4">{{fmtDate(r.created_at)}}</td><td>{{r.scan_type}}</td><td>{{r.total_deps}}</td><td>{{r.risk_level}}</td><td>{{r.conflicts_error+r.conflicts_warning}}</td></tr></tbody></table>
+          </div>
+        </div>
+
+        <!-- 多法规 -->
+        <div v-if="view==='regulation'">
+          <div class="grid grid-cols-3 gap-4">
+            <div v-for="r in regulations" :key="r.id" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md" @click="switchRegulation(r)">
+              <div class="font-bold text-lg">{{r.name}}</div><div class="text-xs text-slate-500 mb-2">{{r.full_name}}</div>
+              <div class="text-sm text-slate-600">领域: {{r.domain_count}} | 控制项: {{r.item_count}}</div>
+              <div class="text-xs mt-2" :class="r.is_active?'text-emerald-600':'text-slate-400'">{{r.is_active?'已激活':'待激活'}}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI 差距分析 -->
+        <div v-if="view==='ai'">
+          <div class="bg-white rounded-xl p-4 shadow-sm mb-4" v-if="curAssessment">
+            <div class="font-medium mb-2">当前评估: {{curAssessment.title}} (就绪度 {{curAssessment.readiness}}%)</div>
+            <button @click="runAiAnalysis" :disabled="aiRunning" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-slate-900">{{aiRunning?'分析中...':'AI 差距分析'}}</button>
+          </div>
+          <div v-if="aiResult" class="bg-white rounded-xl p-4 shadow-sm">
+            <div class="font-medium mb-2">分析结果 <span class="text-xs text-slate-400">({{aiResult.model}})</span></div>
+            <div v-html="aiHtml" class="doc-content text-sm"></div>
+          </div>
+          <div class="bg-white rounded-xl p-4 shadow-sm mt-4" v-if="aiAnalyses.length">
+            <div class="font-medium mb-2">历史分析</div>
+            <div v-for="a in aiAnalyses" :key="a.id" class="text-sm py-1 border-b flex justify-between"><span>{{a.analysis_type}}</span><span>{{fmtDate(a.created_at)}}</span><span :class="a.status==='done'?'text-emerald-600':'text-slate-400'">{{a.status}}</span></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- 通用模态框 -->
+  <div v-if="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="modal=null">
+    <div class="bg-white rounded-xl p-6 w-[480px] max-h-[85vh] overflow-y-auto">
+      <div class="font-semibold text-lg mb-4">{{modal.title}}</div>
+      <div v-for="f in modal.fields" :key="f.key" class="mb-3">
+        <label class="text-sm text-slate-600">{{f.label}}</label>
+        <select v-if="f.type==='select'" v-model="modal.data[f.key]" class="w-full border rounded px-2 py-1.5 mt-1">
+          <option v-for="o in f.options" :key="o.v" :value="o.v">{{o.l}}</option>
+        </select>
+        <textarea v-else-if="f.type==='textarea'" v-model="modal.data[f.key]" class="w-full border rounded px-2 py-1.5 mt-1" rows="3"></textarea>
+        <input v-else v-model="modal.data[f.key]" :type="f.type||'text'" class="w-full border rounded px-2 py-1.5 mt-1"/>
+      </div>
+      <div class="flex justify-end gap-2 mt-4">
+        <button @click="modal=null" class="px-3 py-1.5 border rounded text-sm">取消</button>
+        <button @click="modal.onSave()" :disabled="loading" class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm disabled:opacity-50">保存</button>
+        <div v-if="modal.error" class="text-red-500 text-xs mt-2">{{modal.error}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 文档查看模态 -->
+  <div v-if="docView" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="docView=null">
+    <div class="bg-white rounded-xl p-6 w-[700px] max-h-[85vh] overflow-y-auto">
+      <div class="flex justify-between mb-3"><div class="font-semibold text-lg">{{docView.title}}</div>
+        <button @click="exportDoc(docView.id,'docx')" class="text-sm bg-emerald-600 text-white px-3 py-1 rounded">导出 Word</button></div>
+      <div class="doc-content border rounded p-4" v-html="docView.content_html"></div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div v-if="toast" class="fixed bottom-6 right-6 bg-slate-800 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm">{{toast}}</div>
+</div>
+
+<script>
+const { createApp, ref, reactive, computed, nextTick, onMounted, defineComponent, h } = Vue;
+
+// ── 简单 API 缓存 ──
+const _cache = new Map(); const CACHE_TTL = 30000;
+function cacheGet(k){const e=_cache.get(k);if(e&&Date.now()-e.t<CACHE_TTL)return e.v;_cache.delete(k);return undefined}
+function cacheSet(k,v){_cache.set(k,{v,t:Date.now()})}
+function cacheDel(prefix){for(const k of _cache.keys()){if(k.startsWith(prefix))_cache.delete(k)}}
+
+// ── 表单校验工具 ──
+function validate(v,rules){for(const[f,msg]of rules){if(!v[f]||(typeof v[f]==='string'&&!v[f].trim()))return msg}return null}
+
+// 树节点递归组件
+const TreeNode = defineComponent({
+  name:'TreeNode', props:['node','cur'], emits:['select','add'],
+  template:`<div class="ml-1">
+    <div :class="['flex items-center gap-1 py-1 px-1 rounded cursor-pointer text-sm', cur&&cur.id===node.id?'bg-blue-100':'hover:bg-slate-50']">
+      <span @click="$emit('select',node)" class="flex-1">{{icon}} {{node.name}}</span>
+      <span v-if="childType" @click="$emit('add',node)" class="text-xs text-blue-500" title="新增子节点">+</span>
+    </div>
+    <div class="ml-3 border-l pl-1">
+      <tree-node v-for="c in node.children" :key="c.id" :node="c" :cur="cur" @select="$emit('select',$event)" @add="$emit('add',$event)"></tree-node>
+    </div>
+  </div>`,
+  computed:{
+    icon(){return {business_unit:'🏢',project:'📁',product:'📦',version:'🔖'}[this.node.node_type]||'•'},
+    childType(){return {business_unit:'project',project:'product',product:'version'}[this.node.node_type]}
+  }
+});
+
+// 附件子组件
+const Attachments = defineComponent({
+  name:'Attachments', props:['owner_type','owner_id','api'],
+  template:`<div>
+    <div v-for="a in list" :key="a.id" class="flex items-center gap-2 text-xs py-1 border-b">
+      <span class="flex-1">📎 {{a.filename}} <span class="text-slate-400">({{(a.size/1024).toFixed(1)}}KB · {{a.doc_category||'未分类'}})</span></span>
+      <a @click="dl(a)" class="text-blue-600 cursor-pointer">下载</a>
+      <a @click="rm(a)" class="text-red-500 cursor-pointer">删除</a>
+    </div>
+    <label class="text-xs text-blue-600 cursor-pointer inline-block mt-2">+ 上传文件
+      <input type="file" class="hidden" @change="up"></label>
+  </div>`,
+  data(){return{list:[]}},
+  mounted(){this.load()},
+  methods:{
+    async load(){this.list=await this.api('GET',`/api/attachments?owner_type=${this.owner_type}&owner_id=${this.owner_id}`)},
+    async up(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();
+      fd.append('owner_type',this.owner_type);fd.append('owner_id',this.owner_id);fd.append('file',f);
+      await this.api('POST','/api/attachments',fd,true);this.load()},
+    async dl(a){const r=await fetch(`/api/attachments/${a.id}/download`,{headers:{Authorization:'Bearer '+localStorage.token}});
+      const b=await r.blob();const u=URL.createObjectURL(b);const x=document.createElement('a');x.href=u;x.download=a.filename;x.click()},
+    async rm(a){await this.api('DELETE','/api/attachments/'+a.id);this.load()}
+  }
+});
+
+// 评估步骤附件组件（owner_type 固定为 assessment_answer，每个评估步骤的文档记录入口）
+const StepAttach = defineComponent({
+  name:'StepAttach', props:['answer_id','api'],
+  template:`<div class="mt-1">
+    <div v-for="a in list" :key="a.id" class="flex items-center gap-2 text-xs py-0.5">
+      <span class="flex-1 text-slate-600">📎 {{a.filename}} <span class="text-slate-400">({{(a.size/1024).toFixed(1)}}KB)</span></span>
+      <a @click="dl(a)" class="text-blue-600 cursor-pointer">下载</a>
+      <a @click="rm(a)" class="text-red-500 cursor-pointer">删除</a>
+    </div>
+    <label class="text-xs text-blue-600 cursor-pointer inline-block">+ 上传该步骤文档记录
+      <input type="file" class="hidden" @change="up"></label>
+  </div>`,
+  data(){return{list:[]}},
+  mounted(){this.load()},
+  watch:{answer_id(){this.load()}},
+  methods:{
+    async load(){if(!this.answer_id){this.list=[];return;}this.list=await this.api('GET',`/api/attachments?owner_type=assessment_answer&owner_id=${this.answer_id}`)},
+    async up(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();
+      fd.append('owner_type','assessment_answer');fd.append('owner_id',this.answer_id);fd.append('doc_category','评估证据');fd.append('file',f);
+      await this.api('POST','/api/attachments',fd,true);this.load()},
+    async dl(a){const r=await fetch(`/api/attachments/${a.id}/download`,{headers:{Authorization:'Bearer '+localStorage.token}});
+      const b=await r.blob();const u=URL.createObjectURL(b);const x=document.createElement('a');x.href=u;x.download=a.filename;x.click()},
+    async rm(a){await this.api('DELETE','/api/attachments/'+a.id);this.load()}
+  }
+});
+
+createApp({
+  components:{TreeNode,Attachments,StepAttach},
+  setup(){
+    // 自动检测环境：GitHub Pages 时可配置后端地址，本地开发时同源
+    const isGH = location.hostname.includes('github.io');
+    const savedAPI = localStorage.getItem('cra_api_base');
+    let API = isGH ? (savedAPI || '') : '';
+    const apiBase = ref(savedAPI || '');
+    function saveApiBase() {
+      localStorage.setItem('cra_api_base', apiBase.value);
+      API = apiBase.value;
+      location.reload();
+    }
+    const token = ref(localStorage.getItem('token')||'');
+    const user = reactive({});
+    const login = reactive({username:'admin',password:'admin123'});
+    const loginErr = ref(''); const toast = ref(''); const loading = ref(false); const view = ref('dashboard');
+    const tree = ref([]); const curNode = ref(null); const overview = ref(null);
+    const assessments = ref([]); const curAssessment = ref(null); const controlItems = ref([]);
+    const answers = reactive({}); const remediation = ref([]);
+    const vulns = ref([]); const reports = ref([]); const risks = ref([]);
+    const templates = ref([]); const documents = ref([]); const integrations = ref([]);
+    const auditLogs = ref([]); const suppliers = ref([]); const dash = reactive({counts:{},severity:{},readiness:[],report_alerts:[]});
+    const modal = ref(null); const docView = ref(null);
+    const libId = ref(1);
+    const sevChart=ref(null),readyChart=ref(null),radarChart=ref(null);
+
+    const menus = [
+      {k:'dashboard',label:'合规仪表盘',icon:'📊'},{k:'dashboard-v2',label:'高管态势',icon:'🏢'},
+      {k:'nodes',label:'合规对象树',icon:'🌲'},
+      {k:'assess',label:'CRA 评估',icon:'✅'},{k:'samm',label:'SAMM 成熟度评估',icon:'🏅'},
+      {k:'vulns',label:'漏洞管理',icon:'🐞'},
+      {k:'risks',label:'风险登记册',icon:'⚠️'},{k:'documents',label:'文档与模板',icon:'📄'},
+      {k:'workflow',label:'工作流审批',icon:'✍️'},{k:'supplier',label:'供应商门户',icon:'🏭'},
+      {k:'sbom',label:'SBOM管理',icon:'📦'},{k:'license',label:'许可证扫描',icon:'🛡️'},
+      {k:'integrations',label:'工具集成',icon:'🔌'},{k:'regulation',label:'多法规',icon:'📋'},
+      {k:'ai',label:'AI差距分析',icon:'🤖'},{k:'audit',label:'审计日志',icon:'📜'},
+    ];
+    const menuLabel = computed(()=> (menus.find(m=>m.k===view.value)||{}).label || {assess:'CRA 评估',samm:'SAMM 成熟度评估',reports:'通报看板'}[view.value]||'');
+
+    async function api(method,url,body,isForm){
+      // GET 请求走缓存
+      if(method==='GET'){
+        const hit=cacheGet(url); if(hit!==undefined) return hit;
+      }else{
+        _cache.clear(); // 写操作清除全部缓存
+      }
+      loading.value=true;
+      try{
+        const opt={method,headers:{}};
+        if(token.value) opt.headers.Authorization='Bearer '+token.value;
+        if(body){ if(isForm){opt.body=body;} else {opt.headers['Content-Type']='application/json';opt.body=JSON.stringify(body);} }
+        const r=await fetch(API+url,opt);
+        if(r.status===401){logout();throw new Error('未授权');}
+        if(!r.ok){
+          const e=await r.json().catch(()=>({detail:'请求失败'}));
+          const msg = typeof e.detail === 'string' ? e.detail : (Array.isArray(e.detail) ? e.detail.map(x=>x.msg||'').join('; ') : '操作失败');
+          showToast(msg); throw new Error(msg);
+        }
+        const ct=r.headers.get('content-type')||'';
+        const data = await (ct.includes('json') ? r.json() : r.text());
+        // 缓存 GET 结果
+        if(method==='GET') cacheSet(url,data);
+        return data;
+      }finally{loading.value=false;}
+    }
+    function showToast(m){toast.value=m;setTimeout(()=>toast.value='',2500);}
+
+    async function doLogin(){
+      loginErr.value='';
+      try{
+        const fd=new URLSearchParams();fd.append('username',login.username);fd.append('password',login.password);
+        const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd});
+        if(!r.ok){loginErr.value='用户名或密码错误';return;}
+        const d=await r.json();token.value=d.access_token;localStorage.setItem('token',d.access_token);
+        await loadMe();initData();
+      }catch(e){loginErr.value='登录失败';}
+    }
+    function logout(){token.value='';localStorage.removeItem('token');}
+    async function loadMe(){Object.assign(user,await api('GET','/api/auth/me'));}
+
+    function roleLabel(r){return {admin:'管理员',manager:'合规经理',assessor:'评估员',auditor:'审计员',viewer:'只读'}[r]||r;}
+    function typeLabel(t){return {business_unit:'事业部',project:'项目',product:'产品',version:'版本'}[t]||t;}
+    function craClassLabel(c){return {default:'默认类',important_1:'重要产品 Class I',important_2:'重要产品 Class II',critical:'关键产品'}[c]||c;}
+    function statusLabel(s){return {draft:'草稿',submitted:'已提交',approved:'已审批',review:'评审中',exported:'已导出'}[s]||s;}
+    function vulnStatusLabel(s){return {open:'待处理',triaged:'已定级',fixing:'修复中',fixed:'已修复',disclosed:'已披露',reported:'已通报'}[s]||s;}
+    function sevLabel(s){return {critical:'严重',high:'高',medium:'中',low:'低'}[s]||s;}
+    function sevClass(s){return {critical:'text-red-600 font-medium',high:'text-orange-600',medium:'text-amber-600',low:'text-slate-500'}[s]||'';}
+    function reportLabel(t){return {early_24h:'24h 早期预警',notify_72h:'72h 通报',final_14d:'14天 最终报告'}[t]||t;}
+    function repStatusLabel(s){return {pending:'待提交',sent:'已提交',overdue:'已逾期'}[s]||s;}
+    function repStatusClass(s){return {pending:'bg-amber-100 text-amber-700',sent:'bg-emerald-100 text-emerald-700',overdue:'bg-red-100 text-red-700'}[s];}
+    function fmtDate(d){if(!d)return'';return new Date(d).toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-');}
+
+    // ── 数据加载 ──
+    async function initData(){loadTree();loadDash();loadTemplates();}
+    async function loadTree(){tree.value=await api('GET','/api/nodes/tree');}
+    async function loadDash(){
+      const d=await api('GET','/api/dashboard');Object.assign(dash,d);
+      nextTick(()=>{renderSev();renderReady();});
+    }
+    async function selectNode(n){curNode.value=n;overview.value=await api('GET',`/api/nodes/${n.id}/overview`);}
+    async function loadAssessments(){if(curNode.value){const ft=view.value==='samm'?'samm':'cra';assessments.value=await api('GET',`/api/assessments?node_id=${curNode.value.id}&framework_type=${ft}`);}else assessments.value=[];}
+    async function loadVulns(){if(curNode.value)vulns.value=await api('GET',`/api/vulns?node_id=${curNode.value.id}`);else vulns.value=await api('GET','/api/vulns');}
+    async function loadReports(){reports.value=await api('GET','/api/vulns/reports/board');}
+    async function loadRisks(){risks.value=await api('GET','/api/risks'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
+    async function loadSuppliers(){suppliers.value=await api('GET','/api/suppliers');}
+    async function loadTemplates(){templates.value=await api('GET','/api/templates');}
+    async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
+    async function loadIntegrations(){integrations.value=await api('GET','/api/integrations');}
+    async function loadAudit(){auditLogs.value=await api('GET','/api/audit');}
+
+    // ── 节点操作 ──
+    function openNodeModal(parent,edit){
+      const types={business_unit:'project',project:'product',product:'version'};
+      const ntype = edit? parent.node_type : (parent? types[parent.node_type] : 'business_unit');
+      modal.value={title: edit?'编辑节点':'新建'+typeLabel(ntype),
+        fields:[{key:'name',label:'名称'},{key:'code',label:'编码'},
+          {key:'cra_class',label:'CRA 分类',type:'select',options:[
+            {v:'default',l:'默认类'},{v:'important_1',l:'重要产品 Class I'},{v:'important_2',l:'重要产品 Class II'},{v:'critical',l:'关键产品'}]},
+          {key:'description',label:'描述',type:'textarea'}],
+        data: edit?{...parent}:{name:'',code:'',cra_class:'default',description:''},
+        error: null,
+        onSave: async()=>{
+          const err=validate(modal.value.data,[['name','名称不能为空']]);
+          if(err){modal.value.error=err;return;} modal.value.error=null;
+          try{
+            if(edit){await api('PUT','/api/nodes/'+parent.id,modal.value.data);}
+            else{await api('POST','/api/nodes',{...modal.value.data,node_type:ntype,parent_id:parent?parent.id:null});}
+            modal.value=null;loadTree();if(curNode.value)selectNode(curNode.value);showToast('已保存');
+          }catch(e){
+            modal.value.error = '保存失败：' + (e.message || '请检查网络连接和权限');
+          }
+        }};
+    }
+    async function delNode(n){if(!confirm('确认删除该节点？'))return;await api('DELETE','/api/nodes/'+n.id);overview.value=null;curNode.value=null;loadTree();showToast('已删除');}
+
+    // ── 评估 ──
+    function gotoAssess(n){curNode.value=n;view.value='assess';curAssessment.value=null;loadAssessments();}
+    const isSamm=computed(()=>curAssessment.value?.framework_type==='samm');
+    function noteOf(it){ if(!answers[it.id]) answers[it.id]={level:0,note:''}; if(answers[it.id].note==null) answers[it.id].note=''; return answers[it.id]; }
+    async function newAssessment(kind){
+      const ft = kind==='samm'?'samm':'cra';
+      const libs=await api('GET',`/api/controls/libraries?framework_type=${ft}`);
+      if(!libs.length){showToast('未找到评估库');return;}
+      const title=curNode.value.name+(ft==='samm'?' SAMM 成熟度评估':' CRA 合规评估');
+      const r=await api('POST','/api/assessments',{node_id:curNode.value.id,library_id:libs[0].id,title});
+      openAssessment(r.id);
+    }
+    async function openAssessment(aid){
+      curAssessment.value=await api('GET','/api/assessments/'+aid);
+      controlItems.value=await api('GET',`/api/controls/libraries/${curAssessment.value.library_id}/items`);
+      Object.keys(answers).forEach(k=>delete answers[k]);
+      Object.entries(curAssessment.value.answers||{}).forEach(([k,v])=>answers[k]={...v});
+      loadRadar();
+    }
+    async function setLevel(it,lv){
+      const cur=answers[it.id]||{};
+      answers[it.id]={...cur,level:lv};
+      const r=await api('POST',`/api/assessments/${curAssessment.value.id}/answer`,{item_id:it.id,level:lv,evidence_text:'',note:cur.note||''});
+      answers[it.id].answer_id=r.answer_id;
+      curAssessment.value.score=r.score;curAssessment.value.readiness=r.readiness;loadRadar();
+    }
+    async function saveNote(it){
+      const cur=answers[it.id]||{level:0};
+      const r=await api('POST',`/api/assessments/${curAssessment.value.id}/answer`,{item_id:it.id,level:cur.level||0,evidence_text:'',note:cur.note||''});
+      answers[it.id]={...cur,answer_id:r.answer_id};
+    }
+    async function submitAssessment(){
+      const r=await api('POST',`/api/assessments/${curAssessment.value.id}/submit`);
+      curAssessment.value.status='submitted';
+      if(r.bridged_to_cra){showToast(`已提交，SAMM 成熟度已折算并入 CRA（${r.bridged_to_cra.cra_level}/5）`);}
+      else{showToast('评估已提交');if(!isSamm.value)loadRemediation();}
+    }
+    async function approveAssessment(){
+      await api('POST',`/api/assessments/${curAssessment.value.id}/approve`);
+      curAssessment.value.status='approved';showToast('已标记合规评审通过');
+    }
+    async function loadRemediation(){const r=await api('GET',`/api/assessments/${curAssessment.value.id}/remediation`);remediation.value=r.items;}
+    async function remediationToTask(r){const body={item_code:r.item_code,item_title:r.item_title,advice:r.advice,recommended_tools:r.recommended_tools||[],priority:r.current_level<=1?'high':'medium',assignee:'',due_days:30};const res=await api('POST',`/api/assessments/${curAssessment.value.id}/remediation/to-task`,body);r.task_id=res.task_id;showToast(res.created?'已转为整改任务#'+res.task_id:'该建议已转任务#'+res.task_id);}
+    async function loadRadar(){
+      const data=await api('GET',`/api/assessments/${curAssessment.value.id}/radar`);
+      const maxv=isSamm.value?3:5;
+      nextTick(()=>{
+        if(!radarChart.value)return;
+        const c=echarts.init(radarChart.value);
+        c.setOption({radar:{indicator:data.map(d=>({name:d.domain,max:maxv})),radius:'62%'},
+          series:[{type:'radar',data:[{value:data.map(d=>d.value),name:'成熟度',areaStyle:{opacity:.2}}]}]});
+      });
+    }
+
+    // ── 漏洞 ──
+    function newVuln(){
+      modal.value={title:'录入漏洞',fields:[
+        {key:'title',label:'标题'},{key:'cve_id',label:'CVE 编号'},
+        {key:'severity',label:'严重度',type:'select',options:[{v:'critical',l:'严重'},{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}]},
+        {key:'cvss_score',label:'CVSS 分值',type:'number'},{key:'component',label:'受影响组件'},
+        {key:'exploited',label:'是否已被利用(true/false)',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]},
+        {key:'description',label:'描述',type:'textarea'}],
+        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,description:'',source:'manual',node_id:curNode.value.id},
+        error:null,
+        onSave:async()=>{const e=validate(modal.value.data,[['title','漏洞标题不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/vulns',modal.value.data);modal.value=null;loadVulns();showToast('已录入');}};
+    }
+    function editVuln(v){
+      modal.value={title:'编辑漏洞',fields:[
+        {key:'status',label:'状态',type:'select',options:[{v:'open',l:'待处理'},{v:'triaged',l:'已定级'},{v:'fixing',l:'修复中'},{v:'fixed',l:'已修复'},{v:'disclosed',l:'已披露'},{v:'reported',l:'已通报'}]},
+        {key:'exploited',label:'已被利用',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]}],
+        data:{...v},error:null,onSave:async()=>{await api('PUT','/api/vulns/'+v.id,modal.value.data);modal.value=null;loadVulns();showToast('已更新');}};
+    }
+    async function sendReport(id){await api('POST',`/api/vulns/reports/${id}/send`);loadReports();showToast('已标记提交');}
+
+    // ── 风险 ──
+    function newRisk(){
+      modal.value={title:'登记风险',fields:[{key:'title',label:'风险描述'},{key:'category',label:'类别'},
+        {key:'inherent_score',label:'固有风险(1-25)',type:'number'},{key:'residual_score',label:'剩余风险(1-25)',type:'number'},
+        {key:'treatment',label:'处置',type:'select',options:[{v:'mitigate',l:'缓解'},{v:'accept',l:'接受'},{v:'transfer',l:'转移'},{v:'avoid',l:'规避'}]}],
+        data:{title:'',category:'',inherent_score:0,residual_score:0,treatment:'mitigate',node_id:curNode.value.id},
+        error:null,
+        onSave:async()=>{const e=validate(modal.value.data,[['title','风险描述不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/risks',modal.value.data);modal.value=null;loadRisks();showToast('已登记');}};
+    }
+
+    // ── 文档 ──
+    async function genFromTemplate(t){
+      if(!curNode.value){showToast('请先在对象树选择节点');return;}
+      const full=await api('GET','/api/templates/'+t.id);
+      modal.value={title:'生成：'+t.name,
+        fields:[{key:'title',label:'文档标题'},...full.fields.map(f=>({key:f.key,label:f.label}))],
+        data:{title:t.name,...Object.fromEntries((full.fields||[]).map(f=>[f.key,'']))},
+        error:null,
+        onSave:async()=>{
+          const e=validate(modal.value.data,[['title','文档标题不能为空']]);
+          if(e){modal.value.error=e;return;} modal.value.error=null;
+          const {title,...fields}=modal.value.data;
+          await api('POST','/api/documents/generate',{template_id:t.id,node_id:curNode.value.id,title,fields});
+          modal.value=null;loadDocs();showToast('文档已生成');view.value='documents';
+        }};
+    }
+    async function viewDoc(id){docView.value=await api('GET','/api/documents/'+id);}
+    async function exportDoc(id,fmt){
+      const r=await fetch(API+`/api/documents/${id}/export?fmt=${fmt}`,{headers:{Authorization:'Bearer '+token.value}});
+      const b=await r.blob();const u=URL.createObjectURL(b);const a=document.createElement('a');
+      a.href=u;a.download='document.'+(fmt==='docx'?'docx':'json');a.click();showToast('已导出');loadDocs();
+    }
+
+    // ── 集成 ──
+    function newIntegration(){
+      modal.value={title:'新建集成',fields:[{key:'name',label:'名称'},
+        {key:'kind',label:'类型',type:'select',options:[{v:'sast',l:'SAST 静态检测'},{v:'sca',l:'SCA 成分分析'},{v:'bat',l:'BAT 二进制检测'},{v:'fuzz',l:'FUZZ 模糊测试'},{v:'public_disclosure',l:'漏洞公开平台'}]},
+        {key:'endpoint',label:'端点 URL（公开平台用）'}],
+        data:{name:'',kind:'sca',endpoint:'',node_id:curNode.value?curNode.value.id:null},
+        error:null,
+        onSave:async()=>{const e=validate(modal.value.data,[['name','集成名称不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/integrations',modal.value.data);modal.value=null;loadIntegrations();showToast('已创建');}};
+    }
+    async function syncIntegration(id){const r=await api('POST',`/api/integrations/${id}/sync`);showToast(r.summary);loadIntegrations();}
+
+    // 图表
+    function renderSev(){if(!sevChart.value)return;const c=echarts.init(sevChart.value);const s=dash.severity||{};
+      c.setOption({tooltip:{},series:[{type:'pie',radius:['40%','70%'],data:[
+        {value:s.critical||0,name:'严重',itemStyle:{color:'#dc2626'}},{value:s.high||0,name:'高',itemStyle:{color:'#ea580c'}},
+        {value:s.medium||0,name:'中',itemStyle:{color:'#d97706'}},{value:s.low||0,name:'低',itemStyle:{color:'#94a3b8'}}]}]});}
+    function renderReady(){if(!readyChart.value)return;const c=echarts.init(readyChart.value);const r=dash.readiness||[];
+      c.setOption({tooltip:{},grid:{left:80,right:20,top:10,bottom:20},xAxis:{type:'value',max:100},
+        yAxis:{type:'category',data:r.map(x=>x.product)},
+        series:[{type:'bar',data:r.map(x=>({value:x.readiness,itemStyle:{color:x.readiness>=70?'#16a34a':x.readiness>=40?'#d97706':'#dc2626'}})),label:{show:true,position:'right',formatter:'{c}%'}}]});}
+
+    const dashCards = computed(()=>{const c=dash.counts||{};return [
+      {label:'合规项目总数',value:c.compliance_projects_total||0,color:'text-blue-600'},
+      {label:'未通过合规评审项目',value:c.projects_not_passed||0,color:'text-amber-600'},
+      {label:'当前未修复漏洞',value:c.vulns_unfixed||0,color:'text-red-600'},
+      {label:'合规通过率',value:(c.pass_rate||0)+'%',color:'text-emerald-600'},
+    ];});
+
+    // 视图切换时按需加载
+    Vue.watch(view,(v)=>{
+      if(v==='dashboard')loadDash();
+      if(v==='dashboard-v2')loadDashV2();
+      if(v==='assess'||v==='samm'){curAssessment.value=null;loadAssessments();}
+      if(v==='vulns')loadVulns();
+      if(v==='reports')loadReports();
+      if(v==='risks')loadRisks();
+      if(v==='documents')loadDocs();
+      if(v==='workflow')loadWorkflows();
+      if(v==='supplier'){loadSuppliers();loadSupplierSubs();}
+      if(v==='sbom')loadSbomRecords();
+      if(v==='license')loadLicenseScans();
+      if(v==='regulation')loadRegulations();
+      if(v==='ai')loadAiAnalyses();
+      if(v==='integrations')loadIntegrations();
+      if(v==='audit')loadAudit();
+    });
+
+    // ── V2 新增数据 ──
+    const dashv2=ref({alerts:[]}); const dashv2Cards=ref([]);
+    const ready2Chart=ref(null);
+    const workflows=ref([]); const supplierSubs=ref([]);
+    const sbomRecords=ref([]); const licenseScans=ref([]); const licenseResult=ref(null);
+    const regulations=ref([]); const aiAnalyses=ref([]); const aiResult=ref(null); const aiRunning=ref(false);
+
+    // ── V2 新增方法 ──
+    async function loadDashV2(){const r=await api('GET','/api/dashboard-v2/overview');dashv2.value=r;
+      dashv2Cards.value=[{label:'合规产品',value:r.products_count,color:'text-blue-600'},{label:'严重漏洞',value:r.critical_vulns,color:'text-red-600'},{label:'逾期通报',value:r.overdue_reports,color:'text-amber-600'},{label:'待审批',value:r.pending_workflows,color:'text-slate-800'},{label:'平均就绪度',value:r.avg_readiness+'%',color:'text-emerald-600'}];
+      if(ready2Chart.value){const c=echarts.init(ready2Chart.value);c.setOption({tooltip:{},xAxis:{type:'value',max:100},yAxis:{type:'category',data:(r.product_readiness||[]).map(x=>x.name)},series:[{type:'bar',data:(r.product_readiness||[]).map(x=>({value:x.readiness,itemStyle:{color:x.readiness>=70?'#16a34a':x.readiness>=40?'#d97706':'#dc2626'}})),label:{show:true,position:'right',formatter:'{c}%'}}]});}}
+
+    async function loadWorkflows(){workflows.value=await api('GET','/api/workflow/list');}
+    function newWF(){
+      modal.value={title:'新建审批',fields:[{key:'title',label:'标题'},{key:'ref_type',label:'类型',type:'select',options:[{v:'assessment',l:'评估'},{v:'document',l:'文档'},{v:'policy',l:'政策'}]}],
+        data:{title:'',ref_type:'assessment',ref_id:curNode.value?curNode.value.id:0},
+        error: null,
+        onSave:async()=>{
+          const err=validate(modal.value.data,[['title','标题不能为空']]);
+          if(err){modal.value.error=err;return;} modal.value.error=null;
+          try{
+            await api('POST','/api/workflow/create',modal.value.data);
+            modal.value=null;loadWorkflows();showToast('已创建');
+          }catch(e){
+            modal.value.error = '创建失败：' + (e.message || '请检查网络连接和权限');
+          }
+        }};
+    }
+    async function submitWF(id){await api('POST',`/api/workflow/${id}/submit`);loadWorkflows();showToast('已提交');}
+    async function approveWF(id){await api('POST',`/api/workflow/${id}/approve`,{comment:''});loadWorkflows();showToast('已批准');}
+    async function rejectWF(id){const c=prompt('驳回理由:');if(c!==null){await api('POST',`/api/workflow/${id}/reject`,{comment:c});loadWorkflows();showToast('已驳回');}}
+    function wfStatusCls(s){return {'draft':'text-slate-400','submitted':'text-amber-600','approved':'text-emerald-600','rejected':'text-red-500'}[s]||'';}
+
+    async function loadSupplierSubs(){supplierSubs.value=await api('GET','/api/supplier-portal/submissions');}
+    function newSupplier(){
+      modal.value={title:"新增供应商",fields:[{key:"name",label:"供应商名称"},{key:"contact",label:"联系方式"},{key:"type",label:"类型",type:"select",options:[{v:"oss_steward",l:"开源维护方"},{v:"commercial",l:"商业供应商"}]},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"}]},{key:"note",label:"备注",type:"textarea"}],
+        data:{name:"",contact:"",type:"commercial",risk_level:"low",note:""},
+        onSave:async()=>{await api("POST","/api/suppliers",modal.value.data);modal.value=null;loadSuppliers();showToast("已创建");}};
+    }
+    function editSupplier(s){
+      modal.value={title:"编辑供应商",fields:[{key:"name",label:"供应商名称"},{key:"contact",label:"联系方式"},{key:"type",label:"类型",type:"select",options:[{v:"oss_steward",l:"开源维护方"},{v:"commercial",l:"商业供应商"}]},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"}]},{key:"note",label:"备注",type:"textarea"}],
+        data:{...s},
+        onSave:async()=>{await api("PUT","/api/suppliers/"+s.id,modal.value.data);modal.value=null;loadSuppliers();showToast("已更新");}};
+    }
+    async function grantSupplierAccess(s){const r=await api('POST','/api/supplier-portal/grant-access',{supplier_id:s.id,node_id:curNode.value?curNode.value.id:0,days:30});alert('访问令牌(复制): '+r.token+'\nURL: '+r.url);}
+    async function reviewSubmission(s,st){const n=st==='rejected'?(prompt('驳回理由:')||''):'';await api('POST',`/api/supplier-portal/submissions/${s.id}/review`,{status:st,note:n});loadSupplierSubs();showToast(st==='approved'?'已通过':'已驳回');}
+
+    async function importSbom(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const r=await api('POST',`/api/sbom/import?node_id=${curNode.value?curNode.value.id:1}`,fd,true);showToast(`导入 ${r.component_count} 组件, 匹配 ${r.vuln_matched} 漏洞`);loadSbomRecords();}
+    async function exportSbom(){const r=await api('GET',`/api/sbom/export/${curNode.value?curNode.value.id:1}`);const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sbom.json';a.click();showToast('已导出');}
+    async function loadSbomRecords(){sbomRecords.value=await api('GET','/api/sbom/records');}
+
+    async function runLicenseScan(deep){const r=await api('POST',`/api/license-scan/scan?node_id=${curNode.value?curNode.value.id:0}&deep=${deep}`);licenseResult.value=r;loadLicenseScans();showToast(`扫描完成: ${r.risk_level}`);}
+    async function loadLicenseScans(){licenseScans.value=await api('GET','/api/license-scan/scans');}
+    function licenseRiskCls(l){return {'low':'emerald-600','medium':'amber-600','high':'red-500','critical':'red-700'}[l]||'slate-400';}
+
+    async function loadRegulations(){regulations.value=await api('GET','/api/regulation-frameworks');}
+    async function switchRegulation(r){showToast(`已选择 ${r.name} 框架 (${r.item_count} 控制项)`);}
+
+    async function runAiAnalysis(){if(!curAssessment.value){showToast('请先选择一个评估');return;}aiRunning.value=true;
+      try{const r=await api('POST',`/api/ai/gap-analysis/${curAssessment.value.id}`);aiResult.value=r;loadAiAnalyses();}finally{aiRunning.value=false;}}
+    async function loadAiAnalyses(){const nid=curNode.value?curNode.value.id:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
+    const aiHtml=computed(()=>aiResult.value?aiResult.value.result.replace(/\n/g,'<br>').replace(/## (.*)/g,'<h2>$1</h2>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>'):'');
+
+    // 添加 RegulationFramework CRUD 路由 (简易)
+    async function loadRegulationFrameworksApi(){return await api('GET','/api/regulation-frameworks');}
+
+    onMounted(()=>{if(token.value){loadMe().then(initData).catch(()=>logout());}});
+
+    return {token,user,login,loginErr,toast,loading,view,menus,menuLabel,tree,curNode,overview,
+      assessments,curAssessment,controlItems,answers,remediation,vulns,reports,risks,
+      templates,documents,integrations,auditLogs,dash,dashCards,modal,docView,
+      sevChart,readyChart,radarChart,api,isGH,apiBase,saveApiBase,
+      doLogin,logout,roleLabel,typeLabel,craClassLabel,statusLabel,vulnStatusLabel,
+      sevLabel,sevClass,reportLabel,repStatusLabel,repStatusClass,fmtDate,
+      selectNode,loadAssessments,openNodeModal,delNode,gotoAssess,newAssessment,openAssessment,
+      setLevel,submitAssessment,loadRemediation,remediation,remediationToTask,newVuln,editVuln,sendReport,newRisk,
+      isSamm,noteOf,saveNote,approveAssessment,
+      genFromTemplate,viewDoc,exportDoc,newIntegration,syncIntegration,
+      dashv2,dashv2Cards,ready2Chart,workflows,newWF,submitWF,approveWF,rejectWF,wfStatusCls,
+      suppliers,loadSuppliers,newSupplier,editSupplier,supplierSubs,grantSupplierAccess,reviewSubmission,loadSupplierSubs,
+      sbomRecords,importSbom,exportSbom,loadSbomRecords,
+      licenseScans,licenseResult,runLicenseScan,loadLicenseScans,licenseRiskCls,
+      regulations,loadRegulations,
+      aiAnalyses,aiResult,aiRunning,aiHtml,runAiAnalysis,loadAiAnalyses};
+  }
+}).mount('#app');
+</script>
+</body>
+</html>
