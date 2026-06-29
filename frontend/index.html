@@ -319,7 +319,7 @@
           <div v-if="!curAssessment" class="bg-white rounded-xl p-5 shadow-sm">
             <div class="flex justify-between mb-3">
               <span class="font-medium">{{view==='samm'?'SAMM 成熟度评估列表':'CRA 评估列表'}}</span>
-              <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" >+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
+              <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
             <div v-if="view==='samm'" class="cra-page text-xs text-slate-500 mb-3 p-2 bg-blue-50 rounded">OWASP SAMM v2：5 大业务功能 × 15 实践 × 3 等级。每个评估步骤均可上传文档记录并填写备注。提交后成熟度分将自动折算并入 CRA 评估体系。</div>
             <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>状态</th><th>{{view==='samm'?'成熟度':'就绪度'}}</th><th>评分</th><th></th></tr></thead>
@@ -395,14 +395,14 @@
         <!-- 漏洞管理 -->
         <div class="cra-page" v-if="view==='vulns'">
           <div class="flex gap-2 mb-3">
-            <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" >+ 录入漏洞</button>
+            <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded">+ 录入漏洞</button>
             <button @click="view='reports'" class="text-xs border px-3 py-1.5 rounded">通报时限看板</button>
           </div>
           <div class="cra-card p-5">
             <table class="cra-table">
               <thead><tr><th>标题</th><th>来源</th><th>严重度</th><th>CVSS</th><th>状态</th><th>首次发现</th><th>未修复时长</th><th>修复时间</th><th></th></tr></thead>
               <tbody><tr v-for="v in vulns" :key="v.id">
-                <td><div>{{v.title}}<span style="font-size:11px;color:var(--cra-text3);margin-left:4px">{{v.cve_id}}</span></div><div style="font-size:10px;color:var(--cra-accent)">{{v.node_name||"未关联"}}</div></td>
+                <td><div>{{v.title}}<span style="font-size:11px;color:var(--cra-text3);margin-left:4px">{{v.cve_id}}</span></div><div style="font-size:10px;color:var(--cra-accent)">{{v.node_name||'未关联'}}</div></td>
                 <td><span class="cra-badge cra-badge-slate">{{v.source.toUpperCase()}}</span></td>
                 <td><span :class="sevClass(v.severity)">{{sevLabel(v.severity)}}</span></td>
                 <td class="cra-num">{{v.cvss_score}}</td>
@@ -435,7 +435,7 @@
 
         <!-- 风险登记册 -->
         <div class="cra-page" v-if="view==='risks'">
-          <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" >+ 登记风险</button>
+          <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" :disabled="!curNode">+ 登记风险</button>
           <div class="cra-card p-5">
             <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">风险</th><th>类别</th><th>固有</th><th>剩余</th><th>处置</th><th>状态</th></tr></thead>
@@ -542,7 +542,7 @@
                   <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-100">{{s.type||'—'}}</span></td>
                   <td class="py-2 px-3"><span :class="'px-2 py-0.5 rounded text-xs font-medium '+(s.importance==='重要'?'bg-red-100 text-red-700':s.importance==='次重要'?'bg-orange-100 text-orange-700':'bg-blue-100 text-blue-700')">{{s.importance||'一般'}}</span></td>
                   <td class="py-2 px-3 text-xs text-slate-500 max-w-[120px] truncate">{{s.note||'—'}}</td>
-                  <td class="py-2 px-3"><button @click="editSupplier(s)" class="text-blue-600 text-xs hover:underline">编辑</button></td>
+                  <td class="py-2 px-3"><button @click="editSupplier(s)" class="text-blue-600 text-xs hover:underline mr-2">编辑</button><button @click="supplierDocs(s)" class="text-emerald-600 text-xs hover:underline">合规文件</button></td>
                 </tr>
                 <tr v-if="!suppliers.length"><td colspan="7" class="text-center text-slate-400 py-8">暂无供应商</td></tr>
               </tbody>
@@ -948,7 +948,7 @@ createApp({
       {title:'供应链',items:[
         {k:'supplier',label:'供应商管理',icon:'cra-truck'},
         {k:'sbom',label:'SBOM管理',icon:'cra-box'},
-        {k:'license',label:'许可证管理',icon:'cra-shield'},
+        {k:'license',label:'许可证扫描',icon:'cra-shield'},
       ]},
       {title:'工具与分析',items:[
         {k:'integrations',label:'工具集成',icon:'cra-plug'},
@@ -1026,13 +1026,16 @@ createApp({
       nextTick(()=>{renderSev();renderReady();});
     }
     async function selectNode(n){curNode.value=n;overview.value=await api('GET',`/api/nodes/${n.id}/overview`);}
-    async function loadAssessments(){if(curNode.value){const ft=view.value==='samm'?'samm':'cra';assessments.value=await api('GET',`/api/assessments?node_id=${curNode.value?curNode.value.id:0}&framework_type=${ft}`);}else assessments.value=[];}
-    async function loadVulns(){if(curNode.value)vulns.value=await api('GET',`/api/vulns?node_id=${curNode.value?curNode.value.id:0}`);else vulns.value=await api('GET','/api/vulns');}
+    async function loadAssessments(){if(curNode.value){const ft=view.value==='samm'?'samm':'cra';assessments.value=await api('GET',`/api/assessments?node_id=${curNode.value.id}&framework_type=${ft}`);}else assessments.value=[];}
+    async function loadVulns(){if(curNode.value)vulns.value=await api('GET',`/api/vulns?node_id=${curNode.value.id}`);else vulns.value=await api('GET','/api/vulns');}
     async function loadReports(){reports.value=await api('GET','/api/vulns/reports/board');}
-    async function loadRisks(){risks.value=await api('GET','/api/risks'+(curNode.value?`?node_id=${curNode.value?curNode.value.id:0}`:''));}
+    async function loadRisks(){risks.value=await api('GET','/api/risks'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
     async function loadSuppliers(){suppliers.value=await api('GET','/api/suppliers');}
+    function _dlAttach(aid){var h={};if(token.value)h.Authorization='Bearer '+token.value;fetch('/api/attachments/'+aid+'/download',{headers:h}).then(function(r){return r.blob();}).then(function(b){var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download='file';a.click();});}
+    function supplierDocs(s){var m=document.createElement('div');m.className='modal-overlay';m.onclick=function(e){if(e.target===m)m.remove()};var h='<div class=\"modal-box\" style=\"max-width:550px\"><h3>'+s.name+' — 合规文件</h3>';h+='<div style=\"margin-bottom:12px\"><input id=\"sdoc_file\" type=\"file\" accept=\".docx,.pdf,.xlsx,.png,.jpg\" multiple style=\"width:100%;padding:8px;border:1px solid var(--cra-border);border-radius:6px\"><button id=\"sdoc_upbtn\" data-sid=\"'+s.id+'\" style=\"margin-top:6px;background:var(--cra-accent);color:#fff;padding:6px 14px;border-radius:6px;border:none;cursor:pointer\">上传</button></div>';h+='<div id=\"sdoc_list\">加载中...</div></div>';m.innerHTML=h;document.body.appendChild(m);document.getElementById('sdoc_upbtn').addEventListener('click',function(){var sid=parseInt(this.dataset.sid);_uploadSdoc(sid);});api('GET','/api/attachments?owner_type=supplier&owner_id='+s.id).then(function(files){var el=document.getElementById('sdoc_list');if(!el)return;if(files&&files.length){var h2='';for(var i=0;i<files.length;i++){var f=files[i];h2+='<div style=\"display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid var(--cra-border);border-radius:6px\"><div style=\"flex:1\"><div style=\"font-size:12px;font-weight:600\">'+f.filename+'</div><div style=\"font-size:10px;color:var(--cra-text3)\">'+(f.size/1024).toFixed(1)+'KB</div></div><button data-aid=\"'+f.id+'\" class=\"sdoc-dl-btn\" style=\"font-size:11px;color:#fff;background:var(--cra-accent);padding:4px 10px;border-radius:4px;border:none;cursor:pointer\">下载</button></div>';}el.innerHTML=h2;var btns=el.querySelectorAll('.sdoc-dl-btn');for(var j=0;j<btns.length;j++){btns[j].addEventListener('click',function(){_dlAttach(parseInt(this.dataset.aid));});}}else{el.innerHTML='<div style=\"text-align:center;padding:16px;color:var(--cra-text3)\">暂无合规文件</div>';}});}
+    async function _uploadSdoc(sid){var files=document.getElementById('sdoc_file')?.files;if(!files||!files.length){return;}var ok=0;for(var i=0;i<files.length;i++){var fd=new FormData();fd.append('file',files[i]);fd.append('owner_type','supplier');fd.append('owner_id',sid);fd.append('doc_category','合规文件');try{var h={};if(token.value)h.Authorization='Bearer '+token.value;var r=await fetch('/api/attachments',{method:'POST',headers:h,body:fd});if(r.ok)ok++;}catch(e){break;}}showToast('已上传'+ok+'个文件');var el=document.getElementById('sdoc_list');if(el){el.innerHTML='刷新中...';var h2={};if(token.value)h2.Authorization='Bearer '+token.value;fetch('/api/attachments?owner_type=supplier&owner_id='+sid,{headers:h2}).then(function(r){return r.json();}).then(function(files){var el2=document.getElementById('sdoc_list');if(!el2)return;if(files&&files.length){var h3='';for(var i=0;i<files.length;i++){var f=files[i];h3+='<div style=\"display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border:1px solid var(--cra-border);border-radius:6px\"><div style=\"flex:1\"><div style=\"font-size:12px;font-weight:600\">'+f.filename+'</div><div style=\"font-size:10px;color:var(--cra-text3)\">'+(f.size/1024).toFixed(1)+'KB</div></div><button data-aid=\"'+f.id+'\" class=\"sdoc-dl-btn\" style=\"font-size:11px;color:#fff;background:var(--cra-accent);padding:4px 10px;border-radius:4px;border:none;cursor:pointer\">下载</button></div>';}el2.innerHTML=h3;var btns=el2.querySelectorAll('.sdoc-dl-btn');for(var j=0;j<btns.length;j++){btns[j].addEventListener('click',function(){_dlAttach(parseInt(this.dataset.aid));});}}else{el2.innerHTML='暂无';}});}}
     async function loadTemplates(){templates.value=await api('GET','/api/templates');}
-    async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value?curNode.value.id:0}`:''));}
+    async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
     async function loadIntegrations(){integrations.value=await api('GET','/api/integrations');}
     async function loadAudit(){auditLogs.value=await api('GET','/api/audit');}
 
@@ -1141,7 +1144,7 @@ createApp({
       const libs=await api('GET',`/api/controls/libraries?framework_type=${ft}`);
       if(!libs.length){showToast('未找到评估库');return;}
       const title=curNode.value.name+(ft==='samm'?' SAMM 成熟度评估':' CRA 合规评估');
-      const r=await api('POST','/api/assessments',{node_id:curNode.value?curNode.value.id:0,library_id:libs[0].id,title});
+      const r=await api('POST','/api/assessments',{node_id:curNode.value.id,library_id:libs[0].id,title});
       openAssessment(r.id);
     }
     async function openAssessment(aid){
@@ -1188,18 +1191,22 @@ createApp({
 
     // ── 漏洞 ──
     function newVuln(){
+      var nodes=tree.value||[];var verOpts=[{v:0,l:'未关联版本'}];
+      function walk(n,dep){var pfx='';for(var d=0;d<dep;d++)pfx+='  ';if(n.node_type==='version')verOpts.push({v:n.id,l:pfx+n.name});if(n.children)n.children.forEach(function(c){walk(c,dep+1);});}
+      nodes.forEach(function(n){walk(n,0);});
       const today=new Date().toISOString().slice(0,10);
       modal.value={title:'录入漏洞',fields:[
-        {key:'title',label:'标题'},{key:'cve_id',label:'CVE 编号'},
+        {key:'node_id',label:'关联版本',type:'select',options:verOpts},
+        {key:'title',label:'漏洞标题'},{key:'cve_id',label:'CVE 编号'},
         {key:'severity',label:'严重度',type:'select',options:[{v:'critical',l:'严重'},{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}]},
         {key:'cvss_score',label:'CVSS 分值',type:'number'},{key:'component',label:'受影响组件'},
         {key:'exploited',label:'是否已被利用',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]},
         {key:'first_seen_at',label:'首次发现日期',type:'date'},
         {key:'description',label:'描述',type:'textarea'},
         {key:'note',label:'备注',type:'textarea'}],
-        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,first_seen_at:today,description:'',note:'',source:'manual',node_id:curNode.value?curNode.value.id:0},
+        data:{node_id:curNode.value?curNode.value.id:0,title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,first_seen_at:today,description:'',note:'',source:'manual'},
         error:null,
-        onSave:async()=>{const e=validate(modal.value.data,[['title','漏洞标题不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/vulns',modal.value.data);modal.value=null;loadVulns();showToast('已录入');}};
+        onSave:async()=>{var d=modal.value.data;if(!d.node_id)d.node_id=0;const e=validate(d,[['title','漏洞标题不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/vulns',d);modal.value=null;loadVulns();showToast('已录入');}};
     }
     function editVuln(v){
       modal.value={title:'编辑漏洞',fields:[
@@ -1217,7 +1224,7 @@ createApp({
       modal.value={title:'登记风险',fields:[{key:'title',label:'风险描述'},{key:'category',label:'类别'},
         {key:'inherent_score',label:'固有风险(1-25)',type:'number'},{key:'residual_score',label:'剩余风险(1-25)',type:'number'},
         {key:'treatment',label:'处置',type:'select',options:[{v:'mitigate',l:'缓解'},{v:'accept',l:'接受'},{v:'transfer',l:'转移'},{v:'avoid',l:'规避'}]}],
-        data:{title:'',category:'',inherent_score:0,residual_score:0,treatment:'mitigate',node_id:curNode.value?curNode.value.id:0},
+        data:{title:'',category:'',inherent_score:0,residual_score:0,treatment:'mitigate',node_id:curNode.value.id},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['title','风险描述不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/risks',modal.value.data);modal.value=null;loadRisks();showToast('已登记');}};
     }
@@ -1234,7 +1241,7 @@ createApp({
           if(e){modal.value.error=e;return;} modal.value.error=null;
           const {title,...fields}=modal.value.data;
           const payload={template_id:t.id,title,fields};
-          if(curNode.value)payload.node_id=curNode.value?curNode.value.id:0;
+          if(curNode.value)payload.node_id=curNode.value.id;
           await api('POST','/api/documents/generate',payload);
           modal.value=null;loadDocs();showToast('文档已生成');view.value='documents';
         }};
@@ -1257,7 +1264,7 @@ createApp({
       modal.value={title:'新建集成',fields:[{key:'name',label:'名称'},
         {key:'kind',label:'类型',type:'select',options:[{v:'sast',l:'SAST 静态检测'},{v:'sca',l:'SCA 成分分析'},{v:'bat',l:'BAT 二进制检测'},{v:'fuzz',l:'FUZZ 模糊测试'},{v:'public_disclosure',l:'漏洞公开平台'}]},
         {key:'endpoint',label:'端点 URL（公开平台用）'}],
-        data:{name:'',kind:'sca',endpoint:'',node_id:curNode.value?curNode.value?curNode.value.id:0:null},
+        data:{name:'',kind:'sca',endpoint:'',node_id:curNode.value?curNode.value.id:null},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['name','集成名称不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/integrations',modal.value.data);modal.value=null;loadIntegrations();showToast('已创建');}};
     }
@@ -1304,13 +1311,14 @@ createApp({
     const dashv2=ref({alerts:[]});
     const ready2Chart=ref(null);
     const workflows=ref([]);
+    const sbomRecords=ref([]); const licenseScans=ref([]);
     const regulations=ref([]); const aiAnalyses=ref([]); const aiResult=ref(null); const aiRunning=ref(false); const projectGaps=ref([]);
 
     // ── V2 新增方法 ──
     async function loadWorkflows(){workflows.value=await api('GET','/api/workflow/list');}
     function newWF(){
       modal.value={title:'新建审批',fields:[{key:'title',label:'标题'},{key:'ref_type',label:'类型',type:'select',options:[{v:'assessment',l:'评估'},{v:'document',l:'文档'},{v:'policy',l:'政策'}]}],
-        data:{title:'',ref_type:'assessment',ref_id:curNode.value?curNode.value?curNode.value.id:0:0},
+        data:{title:'',ref_type:'assessment',ref_id:curNode.value?curNode.value.id:0},
         error: null,
         onSave:async()=>{
           const err=validate(modal.value.data,[['title','标题不能为空']]);
@@ -1328,19 +1336,11 @@ createApp({
     async function rejectWF(id){const c=prompt('驳回理由:');if(c!==null){await api('POST',`/api/workflow/${id}/reject`,{comment:c});loadWorkflows();showToast('已驳回');}}
     function wfStatusCls(s){return {'draft':'text-slate-400','submitted':'text-amber-600','approved':'text-emerald-600','rejected':'text-red-500'}[s]||'';}
 
-    function newSupplier(){
-      modal.value={title:"新增供应商",fields:[{key:"name",label:"供应商名称"},{key:"contact",label:"联系方式"},{key:"type",label:"类型",type:"select",options:[{v:"oss_steward",l:"开源维护方"},{v:"commercial",l:"商业供应商"}]},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"}]},{key:"note",label:"备注",type:"textarea"}],
-        data:{name:"",contact:"",type:"commercial",risk_level:"low",note:""},
-        onSave:async()=>{await api("POST","/api/suppliers",modal.value.data);modal.value=null;loadSuppliers();showToast("已创建");}};
-    }
-    function editSupplier(s){
-      modal.value={title:"编辑供应商",fields:[{key:"name",label:"供应商名称"},{key:"contact",label:"联系方式"},{key:"type",label:"类型",type:"select",options:[{v:"oss_steward",l:"开源维护方"},{v:"commercial",l:"商业供应商"}]},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"}]},{key:"note",label:"备注",type:"textarea"}],
-        data:{...s},
-        onSave:async()=>{await api("PUT","/api/suppliers/"+s.id,modal.value.data);modal.value=null;loadSuppliers();showToast("已更新");}};
-    }
+    function newSupplier(){modal.value={title:"新增供应商",fields:[{key:"name",label:"供应商公司全称"},{key:"contact_person",label:"供应商联系人"},{key:"contact_info",label:"供应商联系方式"},{key:"type",label:"供应商类型",type:"select",options:[{v:"商业供应商",l:"商业供应商"},{v:"开源供应商",l:"开源供应商"},{v:"外包供应商",l:"外包供应商"},{v:"服务供应商",l:"服务供应商"},{v:"运维供应商",l:"运维供应商"},{v:"其他",l:"其他"}]},{key:"importance",label:"重要等级",type:"select",options:[{v:"重要",l:"重要"},{v:"次重要",l:"次重要"},{v:"一般",l:"一般"}]},{key:"note",label:"备注",type:"textarea"}],data:{name:"",contact_person:"",contact_info:"",type:"商业供应商",importance:"一般",note:""},error:null,onSave:async()=>{await api("POST","/api/suppliers",modal.value.data);modal.value=null;loadSuppliers();showToast("已创建");}};}
+    function editSupplier(s){modal.value={title:"编辑供应商："+s.name,fields:[{key:"name",label:"供应商公司全称"},{key:"contact_person",label:"供应商联系人"},{key:"contact_info",label:"供应商联系方式"},{key:"type",label:"供应商类型",type:"select",options:[{v:"商业供应商",l:"商业供应商"},{v:"开源供应商",l:"开源供应商"},{v:"外包供应商",l:"外包供应商"},{v:"服务供应商",l:"服务供应商"},{v:"运维供应商",l:"运维供应商"},{v:"其他",l:"其他"}]},{key:"importance",label:"重要等级",type:"select",options:[{v:"重要",l:"重要"},{v:"次重要",l:"次重要"},{v:"一般",l:"一般"}]},{key:"note",label:"备注",type:"textarea"}],data:{name:s.name||"",contact_person:s.contact_person||"",contact_info:s.contact_info||"",type:s.type||"商业供应商",importance:s.importance||"一般",note:s.note||""},error:null,onSave:async()=>{await api("PUT","/api/suppliers/"+s.id,modal.value.data);modal.value=null;loadSuppliers();showToast("已更新");}};}
 
-    async function importSbom(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const r=await api('POST',`/api/sbom/import?node_id=${curNode.value?curNode.value?curNode.value.id:0:1}`,fd,true);showToast(`导入 ${r.component_count} 组件, 匹配 ${r.vuln_matched} 漏洞`);loadSbomRecords();}
-    async function exportSbom(){const r=await api('GET',`/api/sbom/export/${curNode.value?curNode.value?curNode.value.id:0:1}`);const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sbom.json';a.click();showToast('已导出');}
+    async function importSbom(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const r=await api('POST',`/api/sbom/import?node_id=${curNode.value?curNode.value.id:1}`,fd,true);showToast(`导入 ${r.component_count} 组件, 匹配 ${r.vuln_matched} 漏洞`);loadSbomRecords();}
+    async function exportSbom(){const r=await api('GET',`/api/sbom/export/${curNode.value?curNode.value.id:1}`);const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sbom.json';a.click();showToast('已导出');}
     async function loadSbomRecords(){sbomRecords.value=await api('GET','/api/sbom/records');}
 
     async function loadLicenseScans(){licenseScans.value=await api('GET','/api/license-scans');}
@@ -1352,7 +1352,7 @@ createApp({
 
     async function runAiAnalysis(){if(!curAssessment.value){showToast('请先选择一个评估');return;}aiRunning.value=true;
       try{const r=await api('POST',`/api/ai/gap-analysis/${curAssessment.value.id}`);aiResult.value=r;loadAiAnalyses();}finally{aiRunning.value=false;}}
-    async function loadAiAnalyses(){const nid=curNode.value?curNode.value?curNode.value.id:0:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
+    async function loadAiAnalyses(){const nid=curNode.value?curNode.value.id:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
     async function loadProjectGaps(){projectGaps.value=await api('GET','/api/ai/project-gaps');}
     async function runProjectGap(p){if(!p.assessment_id){showToast('该项目暂无评估');return;}aiRunning.value=true;
       try{const r=await api('POST',`/api/ai/gap-analysis/${p.assessment_id}`);aiResult.value=r;await loadProjectGaps();showToast('差距分析完成');}catch(e){showToast(e.message||'分析失败');}finally{aiRunning.value=false;}}
@@ -1377,7 +1377,7 @@ createApp({
       isSamm,noteOf,saveNote,approveAssessment,
       genFromTemplate,viewDemo,viewDoc,exportDoc,newIntegration,syncIntegration,
       dashv2,workflows,newWF,submitWF,approveWF,rejectWF,wfStatusCls,
-      suppliers,loadSuppliers,newSupplier,editSupplier,
+      suppliers,loadSuppliers,supplierDocs,_dlAttach,newSupplier,editSupplier,
       sbomRecords,importSbom,exportSbom,loadSbomRecords,
       licenseScans,newLicense,editLicense,loadLicenseScans,
       regulations,loadRegulations,
