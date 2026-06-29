@@ -34,6 +34,19 @@ class UserCreate(BaseModel):
     dept_id: int | None = None
 
 
+class UserUpdate(BaseModel):
+    """更新用户：所有字段可选，只更新传入的字段。"""
+    email: str | None = None
+    full_name: str | None = None
+    role: str | None = None
+    dept_id: int | None = None
+    is_active: bool | None = None
+
+
+class UserPasswordReset(BaseModel):
+    new_password: str
+
+
 # ── 对象树 ──
 class NodeCreate(BaseModel):
     parent_id: int | None = None
