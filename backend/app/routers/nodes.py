@@ -37,6 +37,34 @@ def get_tree(db: Session = Depends(get_db), _: User = Depends(get_current_user))
     return roots
 
 
+@nodes_router.get("/projects")
+def list_projects(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+    """返回所有项目(project)级别节点及其聚合统计，用于项目详情卡片页。"""
+    projects = db.query(OrgNode).filter(OrgNode.node_type == "project").all()
+    result = []
+    for p in projects:
+        assessments = db.query(Assessment).filter(Assessment.node_id == p.id).all()
+        vulns = db.query(Vulnerability).filter(Vulnerability.node_id == p.id).all()
+        latest = max(assessments, key=lambda a: a.id, default=None)
+        # 子节点(产品)的漏洞
+        child_ids = [c.id for c in db.query(OrgNode).filter(OrgNode.parent_id == p.id).all()]
+        child_vulns = db.query(Vulnerability).filter(Vulnerability.node_id.in_(child_ids)).all() if child_ids else []
+        all_vulns = vulns + child_vulns
+        result.append({
+            "id": p.id, "parent_id": p.parent_id, "name": p.name, "code": p.code,
+            "cra_class": p.cra_class, "description": p.description,
+            "assessment_count": len(assessments),
+            "latest_score": round(latest.score, 1) if latest else None,
+            "latest_readiness": round(latest.readiness, 1) if latest else None,
+            "vuln_total": len(all_vulns),
+            "vuln_open": sum(1 for v in all_vulns if v.status in ("open", "triaged", "fixing")),
+            "vuln_critical": sum(1 for v in all_vulns if v.severity == "critical"),
+            "child_count": len(child_ids),
+            "created_at": p.created_at.isoformat() if p.created_at else None,
+        })
+    return result
+
+
 @nodes_router.get("/{node_id}/overview")
 def node_overview(node_id: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
     node = db.get(OrgNode, node_id)
