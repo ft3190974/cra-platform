@@ -80,13 +80,24 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(get_current_user)
     refresh_overdue(db)
     nodes = db.query(OrgNode).all()
     vulns = db.query(Vulnerability).all()
+    projects = [n for n in nodes if n.node_type == "project"]
     products = [n for n in nodes if n.node_type == "product"]
+    versions = [n for n in nodes if n.node_type == "version"]
     reports = db.query(VulnReport).all()
     cra_lib = db.query(ControlLibrary).filter(ControlLibrary.framework_type == "cra").first()
 
     sev = {"critical": 0, "high": 0, "medium": 0, "low": 0}
     for v in vulns:
         sev[v.severity] = sev.get(v.severity, 0) + 1
+
+    # 合规逾期项目数
+    from ..models import now as model_now
+    now_ts = model_now()
+    compliance_overdue = sum(1 for n in nodes if n.compliance_deadline and n.compliance_deadline < now_ts)
+
+    # 供应商数量
+    from ..models import Supplier
+    supplier_count = db.query(Supplier).count()
 
     # 批量加载所有产品的评估（一次查询代替 N 次）
     product_ids = [p.id for p in products]
@@ -100,7 +111,6 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(get_current_user)
             if a.node_id not in all_assessments:
                 all_assessments[a.node_id] = a  # 最新的排前面
     elif cra_lib:
-        # 无产品时也发一次查询，统一分支
         pass
 
     passed = 0
@@ -122,8 +132,15 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(get_current_user)
     total_projects = len(products)
     pass_rate = round(100 * passed / total_projects, 1) if total_projects else 0.0
     vulns_unfixed = sum(1 for v in vulns if v.status in ("open", "triaged", "fixing"))
+    vulns_unfixed_total = sum(1 for v in vulns if v.status in ("open", "triaged", "fixing"))
 
     return {
+        "products_count": len(versions),
+        "critical_vulns": vulns_unfixed_total,
+        "compliance_overdue": compliance_overdue,
+        "supplier_count": supplier_count,
+        "overdue_reports": compliance_overdue,
+        "avg_readiness": supplier_count,
         "counts": {
             "compliance_projects_total": total_projects,
             "projects_not_passed": not_passed,

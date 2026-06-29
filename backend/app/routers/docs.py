@@ -3,6 +3,9 @@ import hashlib
 import json
 import os
 
+from fastapi import APIRouter, Depends, HTTPException, Form, UploadFile, File
+from sqlalchemy.orm import Session
+
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import Response, StreamingResponse
 from sqlalchemy.orm import Session
@@ -50,6 +53,49 @@ def get_template_demo(tid: int, db: Session = Depends(get_db), _: User = Depends
     if not t:
         raise HTTPException(404, "未找到模板")
     return {"demo_html": t.demo_html or "", "name": t.name}
+
+@templates_router.get("/{tid}/demo/export")
+def export_template_demo(tid: int, fmt: str = "docx", db: Session = Depends(get_db)):
+    """下载模板示例为 Word 文档"""
+    from fastapi.responses import Response
+    t = db.get(DocTemplate, tid)
+    if not t or not t.demo_html:
+        raise HTTPException(404, "该模板暂无示例")
+    data = html_to_docx_bytes(t.name, t.demo_html)
+    fname = (t.name or "template") + ".docx"
+    safe_name = fname.encode("ascii", "ignore").decode() or "document.docx"
+    return Response(content=data,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={"Content-Disposition": f"attachment; filename={safe_name}"})
+
+
+@templates_router.post("/upload")
+async def upload_template(
+    name: str = Form(...), cra_ref: str = Form(""), placeholders: str = Form(""),
+    file: UploadFile = File(...), db: Session = Depends(get_db),
+    user: User = Depends(require_role("manager"))):
+    """上传模板文件(.docx/.html)，自动提取占位符"""
+    import os as _os
+    upload_dir = _os.path.join(_os.path.dirname(__file__), "..", "..", "uploads", "templates")
+    _os.makedirs(upload_dir, exist_ok=True)
+    # Save file
+    safe_name = f"{file.filename}"
+    file_path = _os.path.join(upload_dir, safe_name)
+    content = await file.read()
+    with open(file_path, "wb") as f:
+        f.write(content)
+    # Generate code from name
+    code = "DOC-" + name[:20].upper().replace(" ", "_").replace("/", "_")
+    # Extract placeholders
+    ph_list = [p.strip() for p in placeholders.replace("{{", "").replace("}}", "").split(",") if p.strip()]
+    if not ph_list:
+        ph_list = ["product_name", "version", "company_name", "date"]
+    # Create template record
+    t = DocTemplate(code=code, name=name, doc_type="uploaded", cra_ref=cra_ref, stage="",
+                    body_html="", fields=[{"key": p, "label": p} for p in ph_list],
+                    template_file=safe_name)
+    db.add(t); db.commit(); db.refresh(t)
+    return {"id": t.id, "name": t.name, "code": t.code, "template_file": safe_name}
 
 
 # ── 文档 ──

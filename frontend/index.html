@@ -190,35 +190,35 @@
           <div class="grid grid-cols-4 gap-4 mb-6 cra-stagger">
             <div class="cra-card p-5">
               <div class="flex items-center justify-between mb-2">
-                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">合规产品</span>
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">当前合规版本数量</span>
                 <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,102,255,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-accent)"><use href="#cra-server"/></svg></div>
               </div>
               <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-accent)">{{dash.products_count||0}}</div>
-              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">已在管产品数</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">当前合规版本总数</div>
             </div>
             <div class="cra-card p-5">
               <div class="flex items-center justify-between mb-2">
-                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">严重漏洞</span>
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">当前未修复漏洞数量</span>
                 <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-danger)"><use href="#cra-flame"/></svg></div>
               </div>
               <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-danger)">{{dash.critical_vulns||0}}</div>
-              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">需立即处理</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">未修复的漏洞总数</div>
             </div>
             <div class="cra-card p-5">
               <div class="flex items-center justify-between mb-2">
-                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">逾期通报</span>
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">合规逾期版本数量</span>
                 <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-warning)"><use href="#cra-timer"/></svg></div>
               </div>
-              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-warning)">{{dash.overdue_reports||0}}</div>
-              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">CRA 第14条</div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-warning)">{{dash.compliance_overdue||0}}</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">超过合规日期的版本</div>
             </div>
             <div class="cra-card p-5">
               <div class="flex items-center justify-between mb-2">
-                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">平均就绪度</span>
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">活跃供应商数量</span>
                 <div style="width:40px;height:40px;border-radius:10px;background:rgba(6,182,212,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-success)"><use href="#cra-gauge"/></svg></div>
               </div>
-              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-success)">{{dash.avg_readiness||0}}<span style="font-size:16px">%</span></div>
-              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">全产品平均</div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-success)">{{dash.supplier_count||0}}</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">当前活跃的供应商</div>
             </div>
           </div>
 
@@ -319,7 +319,7 @@
           <div v-if="!curAssessment" class="bg-white rounded-xl p-5 shadow-sm">
             <div class="flex justify-between mb-3">
               <span class="font-medium">{{view==='samm'?'SAMM 成熟度评估列表':'CRA 评估列表'}}</span>
-              <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
+              <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" >+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
             <div v-if="view==='samm'" class="cra-page text-xs text-slate-500 mb-3 p-2 bg-blue-50 rounded">OWASP SAMM v2：5 大业务功能 × 15 实践 × 3 等级。每个评估步骤均可上传文档记录并填写备注。提交后成熟度分将自动折算并入 CRA 评估体系。</div>
             <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>状态</th><th>{{view==='samm'?'成熟度':'就绪度'}}</th><th>评分</th><th></th></tr></thead>
@@ -395,14 +395,14 @@
         <!-- 漏洞管理 -->
         <div class="cra-page" v-if="view==='vulns'">
           <div class="flex gap-2 mb-3">
-            <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 录入漏洞</button>
+            <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" >+ 录入漏洞</button>
             <button @click="view='reports'" class="text-xs border px-3 py-1.5 rounded">通报时限看板</button>
           </div>
           <div class="cra-card p-5">
             <table class="cra-table">
               <thead><tr><th>标题</th><th>来源</th><th>严重度</th><th>CVSS</th><th>状态</th><th>首次发现</th><th>未修复时长</th><th>修复时间</th><th></th></tr></thead>
               <tbody><tr v-for="v in vulns" :key="v.id">
-                <td>{{v.title}}<span style="font-size:11px;color:var(--cra-text3);margin-left:4px">{{v.cve_id}}</span></td>
+                <td><div>{{v.title}}<span style="font-size:11px;color:var(--cra-text3);margin-left:4px">{{v.cve_id}}</span></div><div style="font-size:10px;color:var(--cra-accent)">{{v.node_name||"未关联"}}</div></td>
                 <td><span class="cra-badge cra-badge-slate">{{v.source.toUpperCase()}}</span></td>
                 <td><span :class="sevClass(v.severity)">{{sevLabel(v.severity)}}</span></td>
                 <td class="cra-num">{{v.cvss_score}}</td>
@@ -435,7 +435,7 @@
 
         <!-- 风险登记册 -->
         <div class="cra-page" v-if="view==='risks'">
-          <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" :disabled="!curNode">+ 登记风险</button>
+          <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" >+ 登记风险</button>
           <div class="cra-card p-5">
             <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">风险</th><th>类别</th><th>固有</th><th>剩余</th><th>处置</th><th>状态</th></tr></thead>
@@ -523,19 +523,30 @@
           </div>
         </div>
 
-        <!-- 供应商门户 -->
+        <!-- 供应商管理 -->
         <div class="cra-page" v-if="view==='supplier'">
-          <div class="flex gap-2 mb-4"><button @click="newSupplier" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">新增供应商</button></div>
-          <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="cra-card p-5"><div class="font-medium mb-2">供应商列表</div>
-              <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th>名称</th><th>类型</th><th>风险</th><th>操作</th></tr></thead>
-              <tbody><tr v-for="s in suppliers" :key="s.id" class="border-b"><td class="py-1">{{s.name}}</td><td>{{s.type}}</td><td>{{s.risk_level}}</td>
-                <td><button @click="grantSupplierAccess(s)" class="text-blue-600 text-xs mr-2">生成访问令牌</button><button @click="editSupplier(s)" class="text-slate-400 text-xs">编辑</button></td></tr></tbody></table></div>
-            <div class="cra-card p-5"><div class="font-medium mb-2">供应商提交</div>
-              <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th>标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
-              <tbody><tr v-for="s in supplierSubs" :key="s.id" class="border-b"><td class="py-1">{{s.title}}</td><td>{{s.form_type}}</td><td>{{s.status}}</td>
-                <td><button v-if="s.status==='submitted'" @click="reviewSubmission(s,'approved')" class="text-emerald-600 text-xs">通过</button>
-                  <button v-if="s.status==='submitted'" @click="reviewSubmission(s,'rejected')" class="text-red-500 text-xs ml-2">驳回</button></td></tr></tbody></table></div>
+          <div class="flex justify-between items-center mb-4">
+            <div class="text-lg font-semibold">供应商管理</div>
+            <button @click="newSupplier" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">+ 新增供应商</button>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+            <table class="cra-table w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b">
+                <th class="py-2 px-3">名称</th><th class="py-2 px-3">联系人</th><th class="py-2 px-3">联系方式</th><th class="py-2 px-3">类型</th><th class="py-2 px-3">重要等级</th><th class="py-2 px-3">备注</th><th class="py-2 px-3">操作</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="s in suppliers" :key="s.id" class="border-b hover:bg-slate-50">
+                  <td class="py-2 px-3">{{s.name}}</td>
+                  <td class="py-2 px-3">{{s.contact_person||'—'}}</td>
+                  <td class="py-2 px-3 text-xs">{{s.contact_info||'—'}}</td>
+                  <td class="py-2 px-3"><span class="px-2 py-0.5 rounded text-xs bg-slate-100">{{s.type||'—'}}</span></td>
+                  <td class="py-2 px-3"><span :class="'px-2 py-0.5 rounded text-xs font-medium '+(s.importance==='重要'?'bg-red-100 text-red-700':s.importance==='次重要'?'bg-orange-100 text-orange-700':'bg-blue-100 text-blue-700')">{{s.importance||'一般'}}</span></td>
+                  <td class="py-2 px-3 text-xs text-slate-500 max-w-[120px] truncate">{{s.note||'—'}}</td>
+                  <td class="py-2 px-3"><button @click="editSupplier(s)" class="text-blue-600 text-xs hover:underline">编辑</button></td>
+                </tr>
+                <tr v-if="!suppliers.length"><td colspan="7" class="text-center text-slate-400 py-8">暂无供应商</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -548,14 +559,30 @@
           </div>
         </div>
 
-        <!-- 许可证扫描 -->
+        <!-- 许可证管理 -->
         <div class="cra-page" v-if="view==='license'">
-          <div class="flex gap-2 mb-4"><button @click="runLicenseScan(false)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">快速扫描</button><button @click="runLicenseScan(true)" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm">深度扫描</button></div>
-          <div v-if="licenseResult" class="bg-white rounded-xl p-4 shadow-sm mb-4"><div class="font-medium">扫描结果: <span :class="'text-'+licenseRiskCls(licenseResult.risk_level)">{{licenseResult.risk_level}}</span></div>
-            <div class="text-sm text-slate-500">依赖: {{licenseResult.total_deps}} | 冲突: {{licenseResult.conflicts}}</div></div>
-          <div class="bg-white rounded-xl shadow-sm">
-            <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">时间</th><th>类型</th><th>依赖数</th><th>风险</th><th>冲突</th></tr></thead>
-            <tbody><tr v-for="r in licenseScans" :key="r.id" class="border-b"><td class="py-2 px-4">{{fmtDate(r.created_at)}}</td><td>{{r.scan_type}}</td><td>{{r.total_deps}}</td><td>{{r.risk_level}}</td><td>{{r.conflicts_error+r.conflicts_warning}}</td></tr></tbody></table>
+          <div class="flex justify-between items-center mb-4">
+            <div class="text-lg font-semibold">许可证管理</div>
+            <button @click="newLicense" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">+ 新增版本</button>
+          </div>
+          <div class="bg-white rounded-xl shadow-sm overflow-x-auto">
+            <table class="cra-table w-full text-sm">
+              <thead><tr class="text-left text-slate-500 border-b">
+                <th class="py-2 px-3">版本名称</th><th class="py-2 px-3">许可证数量</th><th class="py-2 px-3">高危许可</th><th class="py-2 px-3">风险等级</th><th class="py-2 px-3">IP合规</th><th class="py-2 px-3">备注</th><th class="py-2 px-3">操作</th>
+              </tr></thead>
+              <tbody>
+                <tr v-for="r in licenseScans" :key="r.id" class="border-b hover:bg-slate-50">
+                  <td class="py-2 px-3 font-medium">{{r.product_version||'—'}}</td>
+                  <td class="py-2 px-3">{{r.license_count||0}}</td>
+                  <td class="py-2 px-3"><span :class="(r.high_risk_count||0)>0?'text-red-600 font-bold':''">{{r.high_risk_count||0}}</span></td>
+                  <td class="py-2 px-3"><span :class="'px-2 py-0.5 rounded text-xs font-medium '+({low:'bg-green-100 text-green-700',medium:'bg-amber-100 text-amber-700',high:'bg-orange-100 text-orange-700',critical:'bg-red-100 text-red-700'}[r.risk_level]||'bg-slate-100')">{{r.risk_level||'low'}}</span></td>
+                  <td class="py-2 px-3"><span :class="r.ip_compliant?'text-emerald-600':'text-red-500'">{{r.ip_compliant?'合规':'不合规'}}</span></td>
+                  <td class="py-2 px-3 text-xs text-slate-500 max-w-[120px] truncate">{{r.note||'—'}}</td>
+                  <td class="py-2 px-3"><button @click="editLicense(r)" class="text-blue-600 text-xs hover:underline">编辑</button></td>
+                </tr>
+                <tr v-if="!licenseScans.length"><td colspan="7" class="text-center text-slate-400 py-8">暂无许可证记录</td></tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -919,9 +946,9 @@ createApp({
         {k:'workflow',label:'工作流审批',icon:'cra-edit'},
       ]},
       {title:'供应链',items:[
-        {k:'supplier',label:'供应商门户',icon:'cra-truck'},
+        {k:'supplier',label:'供应商管理',icon:'cra-truck'},
         {k:'sbom',label:'SBOM管理',icon:'cra-box'},
-        {k:'license',label:'许可证扫描',icon:'cra-shield'},
+        {k:'license',label:'许可证管理',icon:'cra-shield'},
       ]},
       {title:'工具与分析',items:[
         {k:'integrations',label:'工具集成',icon:'cra-plug'},
@@ -999,13 +1026,13 @@ createApp({
       nextTick(()=>{renderSev();renderReady();});
     }
     async function selectNode(n){curNode.value=n;overview.value=await api('GET',`/api/nodes/${n.id}/overview`);}
-    async function loadAssessments(){if(curNode.value){const ft=view.value==='samm'?'samm':'cra';assessments.value=await api('GET',`/api/assessments?node_id=${curNode.value.id}&framework_type=${ft}`);}else assessments.value=[];}
-    async function loadVulns(){if(curNode.value)vulns.value=await api('GET',`/api/vulns?node_id=${curNode.value.id}`);else vulns.value=await api('GET','/api/vulns');}
+    async function loadAssessments(){if(curNode.value){const ft=view.value==='samm'?'samm':'cra';assessments.value=await api('GET',`/api/assessments?node_id=${curNode.value?curNode.value.id:0}&framework_type=${ft}`);}else assessments.value=[];}
+    async function loadVulns(){if(curNode.value)vulns.value=await api('GET',`/api/vulns?node_id=${curNode.value?curNode.value.id:0}`);else vulns.value=await api('GET','/api/vulns');}
     async function loadReports(){reports.value=await api('GET','/api/vulns/reports/board');}
-    async function loadRisks(){risks.value=await api('GET','/api/risks'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
+    async function loadRisks(){risks.value=await api('GET','/api/risks'+(curNode.value?`?node_id=${curNode.value?curNode.value.id:0}`:''));}
     async function loadSuppliers(){suppliers.value=await api('GET','/api/suppliers');}
     async function loadTemplates(){templates.value=await api('GET','/api/templates');}
-    async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
+    async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value?curNode.value.id:0}`:''));}
     async function loadIntegrations(){integrations.value=await api('GET','/api/integrations');}
     async function loadAudit(){auditLogs.value=await api('GET','/api/audit');}
 
@@ -1114,7 +1141,7 @@ createApp({
       const libs=await api('GET',`/api/controls/libraries?framework_type=${ft}`);
       if(!libs.length){showToast('未找到评估库');return;}
       const title=curNode.value.name+(ft==='samm'?' SAMM 成熟度评估':' CRA 合规评估');
-      const r=await api('POST','/api/assessments',{node_id:curNode.value.id,library_id:libs[0].id,title});
+      const r=await api('POST','/api/assessments',{node_id:curNode.value?curNode.value.id:0,library_id:libs[0].id,title});
       openAssessment(r.id);
     }
     async function openAssessment(aid){
@@ -1170,7 +1197,7 @@ createApp({
         {key:'first_seen_at',label:'首次发现日期',type:'date'},
         {key:'description',label:'描述',type:'textarea'},
         {key:'note',label:'备注',type:'textarea'}],
-        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,first_seen_at:today,description:'',note:'',source:'manual',node_id:curNode.value.id},
+        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,first_seen_at:today,description:'',note:'',source:'manual',node_id:curNode.value?curNode.value.id:0},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['title','漏洞标题不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/vulns',modal.value.data);modal.value=null;loadVulns();showToast('已录入');}};
     }
@@ -1190,7 +1217,7 @@ createApp({
       modal.value={title:'登记风险',fields:[{key:'title',label:'风险描述'},{key:'category',label:'类别'},
         {key:'inherent_score',label:'固有风险(1-25)',type:'number'},{key:'residual_score',label:'剩余风险(1-25)',type:'number'},
         {key:'treatment',label:'处置',type:'select',options:[{v:'mitigate',l:'缓解'},{v:'accept',l:'接受'},{v:'transfer',l:'转移'},{v:'avoid',l:'规避'}]}],
-        data:{title:'',category:'',inherent_score:0,residual_score:0,treatment:'mitigate',node_id:curNode.value.id},
+        data:{title:'',category:'',inherent_score:0,residual_score:0,treatment:'mitigate',node_id:curNode.value?curNode.value.id:0},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['title','风险描述不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/risks',modal.value.data);modal.value=null;loadRisks();showToast('已登记');}};
     }
@@ -1207,7 +1234,7 @@ createApp({
           if(e){modal.value.error=e;return;} modal.value.error=null;
           const {title,...fields}=modal.value.data;
           const payload={template_id:t.id,title,fields};
-          if(curNode.value)payload.node_id=curNode.value.id;
+          if(curNode.value)payload.node_id=curNode.value?curNode.value.id:0;
           await api('POST','/api/documents/generate',payload);
           modal.value=null;loadDocs();showToast('文档已生成');view.value='documents';
         }};
@@ -1230,7 +1257,7 @@ createApp({
       modal.value={title:'新建集成',fields:[{key:'name',label:'名称'},
         {key:'kind',label:'类型',type:'select',options:[{v:'sast',l:'SAST 静态检测'},{v:'sca',l:'SCA 成分分析'},{v:'bat',l:'BAT 二进制检测'},{v:'fuzz',l:'FUZZ 模糊测试'},{v:'public_disclosure',l:'漏洞公开平台'}]},
         {key:'endpoint',label:'端点 URL（公开平台用）'}],
-        data:{name:'',kind:'sca',endpoint:'',node_id:curNode.value?curNode.value.id:null},
+        data:{name:'',kind:'sca',endpoint:'',node_id:curNode.value?curNode.value?curNode.value.id:0:null},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['name','集成名称不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/integrations',modal.value.data);modal.value=null;loadIntegrations();showToast('已创建');}};
     }
@@ -1262,7 +1289,7 @@ createApp({
       if(v==='risks')loadRisks();
       if(v==='documents')loadDocs();
       if(v==='workflow')loadWorkflows();
-      if(v==='supplier'){loadSuppliers();loadSupplierSubs();}
+      if(v==='supplier'){loadSuppliers();}
       if(v==='sbom')loadSbomRecords();
       if(v==='license')loadLicenseScans();
       if(v==='regulation')loadRegulations();
@@ -1276,15 +1303,14 @@ createApp({
     // ── V2 新增数据 ──
     const dashv2=ref({alerts:[]});
     const ready2Chart=ref(null);
-    const workflows=ref([]); const supplierSubs=ref([]);
-    const sbomRecords=ref([]); const licenseScans=ref([]); const licenseResult=ref(null);
+    const workflows=ref([]);
     const regulations=ref([]); const aiAnalyses=ref([]); const aiResult=ref(null); const aiRunning=ref(false); const projectGaps=ref([]);
 
     // ── V2 新增方法 ──
     async function loadWorkflows(){workflows.value=await api('GET','/api/workflow/list');}
     function newWF(){
       modal.value={title:'新建审批',fields:[{key:'title',label:'标题'},{key:'ref_type',label:'类型',type:'select',options:[{v:'assessment',l:'评估'},{v:'document',l:'文档'},{v:'policy',l:'政策'}]}],
-        data:{title:'',ref_type:'assessment',ref_id:curNode.value?curNode.value.id:0},
+        data:{title:'',ref_type:'assessment',ref_id:curNode.value?curNode.value?curNode.value.id:0:0},
         error: null,
         onSave:async()=>{
           const err=validate(modal.value.data,[['title','标题不能为空']]);
@@ -1302,7 +1328,6 @@ createApp({
     async function rejectWF(id){const c=prompt('驳回理由:');if(c!==null){await api('POST',`/api/workflow/${id}/reject`,{comment:c});loadWorkflows();showToast('已驳回');}}
     function wfStatusCls(s){return {'draft':'text-slate-400','submitted':'text-amber-600','approved':'text-emerald-600','rejected':'text-red-500'}[s]||'';}
 
-    async function loadSupplierSubs(){supplierSubs.value=await api('GET','/api/supplier-portal/submissions');}
     function newSupplier(){
       modal.value={title:"新增供应商",fields:[{key:"name",label:"供应商名称"},{key:"contact",label:"联系方式"},{key:"type",label:"类型",type:"select",options:[{v:"oss_steward",l:"开源维护方"},{v:"commercial",l:"商业供应商"}]},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"}]},{key:"note",label:"备注",type:"textarea"}],
         data:{name:"",contact:"",type:"commercial",risk_level:"low",note:""},
@@ -1313,23 +1338,21 @@ createApp({
         data:{...s},
         onSave:async()=>{await api("PUT","/api/suppliers/"+s.id,modal.value.data);modal.value=null;loadSuppliers();showToast("已更新");}};
     }
-    async function grantSupplierAccess(s){const r=await api('POST','/api/supplier-portal/grant-access',{supplier_id:s.id,node_id:curNode.value?curNode.value.id:0,days:30});alert('访问令牌(复制): '+r.token+'\nURL: '+r.url);}
-    async function reviewSubmission(s,st){const n=st==='rejected'?(prompt('驳回理由:')||''):'';await api('POST',`/api/supplier-portal/submissions/${s.id}/review`,{status:st,note:n});loadSupplierSubs();showToast(st==='approved'?'已通过':'已驳回');}
 
-    async function importSbom(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const r=await api('POST',`/api/sbom/import?node_id=${curNode.value?curNode.value.id:1}`,fd,true);showToast(`导入 ${r.component_count} 组件, 匹配 ${r.vuln_matched} 漏洞`);loadSbomRecords();}
-    async function exportSbom(){const r=await api('GET',`/api/sbom/export/${curNode.value?curNode.value.id:1}`);const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sbom.json';a.click();showToast('已导出');}
+    async function importSbom(e){const f=e.target.files[0];if(!f)return;const fd=new FormData();fd.append('file',f);const r=await api('POST',`/api/sbom/import?node_id=${curNode.value?curNode.value?curNode.value.id:0:1}`,fd,true);showToast(`导入 ${r.component_count} 组件, 匹配 ${r.vuln_matched} 漏洞`);loadSbomRecords();}
+    async function exportSbom(){const r=await api('GET',`/api/sbom/export/${curNode.value?curNode.value?curNode.value.id:0:1}`);const b=new Blob([JSON.stringify(r,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='sbom.json';a.click();showToast('已导出');}
     async function loadSbomRecords(){sbomRecords.value=await api('GET','/api/sbom/records');}
 
-    async function runLicenseScan(deep){const r=await api('POST',`/api/license-scan/scan?node_id=${curNode.value?curNode.value.id:0}&deep=${deep}`);licenseResult.value=r;loadLicenseScans();showToast(`扫描完成: ${r.risk_level}`);}
-    async function loadLicenseScans(){licenseScans.value=await api('GET','/api/license-scan/scans');}
-    function licenseRiskCls(l){return {'low':'emerald-600','medium':'amber-600','high':'red-500','critical':'red-700'}[l]||'slate-400';}
+    async function loadLicenseScans(){licenseScans.value=await api('GET','/api/license-scans');}
+    function newLicense(){modal.value={title:"新增许可证版本",fields:[{key:"product_version",label:"版本名称"},{key:"license_count",label:"许可证数量",type:"number"},{key:"high_risk_count",label:"高危许可证数量",type:"number"},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"},{v:"critical",l:"严重"}]},{key:"ip_compliant",label:"知识产权合规",type:"select",options:[{v:true,l:"合规"},{v:false,l:"不合规"}]},{key:"note",label:"备注",type:"textarea"}],data:{product_version:"",license_count:0,high_risk_count:0,risk_level:"low",ip_compliant:true,note:""},error:null,onSave:async()=>{await api("POST","/api/license-scans",modal.value.data);modal.value=null;loadLicenseScans();showToast("已创建");}};}
+    function editLicense(r){modal.value={title:"编辑许可证："+r.product_version,fields:[{key:"product_version",label:"版本名称"},{key:"license_count",label:"许可证数量",type:"number"},{key:"high_risk_count",label:"高危许可证数量",type:"number"},{key:"risk_level",label:"风险等级",type:"select",options:[{v:"low",l:"低"},{v:"medium",l:"中"},{v:"high",l:"高"},{v:"critical",l:"严重"}]},{key:"ip_compliant",label:"知识产权合规",type:"select",options:[{v:true,l:"合规"},{v:false,l:"不合规"}]},{key:"note",label:"备注",type:"textarea"}],data:{product_version:r.product_version||"",license_count:r.license_count||0,high_risk_count:r.high_risk_count||0,risk_level:r.risk_level||"low",ip_compliant:r.ip_compliant!==false,note:r.note||""},error:null,onSave:async()=>{await api("PUT","/api/license-scans/"+r.id,modal.value.data);modal.value=null;loadLicenseScans();showToast("已更新");}};}
 
     async function loadRegulations(){regulations.value=await api('GET','/api/regulation-frameworks');}
     async function switchRegulation(r){showToast(`已选择 ${r.name} 框架 (${r.item_count} 控制项)`);}
 
     async function runAiAnalysis(){if(!curAssessment.value){showToast('请先选择一个评估');return;}aiRunning.value=true;
       try{const r=await api('POST',`/api/ai/gap-analysis/${curAssessment.value.id}`);aiResult.value=r;loadAiAnalyses();}finally{aiRunning.value=false;}}
-    async function loadAiAnalyses(){const nid=curNode.value?curNode.value.id:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
+    async function loadAiAnalyses(){const nid=curNode.value?curNode.value?curNode.value.id:0:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
     async function loadProjectGaps(){projectGaps.value=await api('GET','/api/ai/project-gaps');}
     async function runProjectGap(p){if(!p.assessment_id){showToast('该项目暂无评估');return;}aiRunning.value=true;
       try{const r=await api('POST',`/api/ai/gap-analysis/${p.assessment_id}`);aiResult.value=r;await loadProjectGaps();showToast('差距分析完成');}catch(e){showToast(e.message||'分析失败');}finally{aiRunning.value=false;}}
@@ -1354,9 +1377,9 @@ createApp({
       isSamm,noteOf,saveNote,approveAssessment,
       genFromTemplate,viewDemo,viewDoc,exportDoc,newIntegration,syncIntegration,
       dashv2,workflows,newWF,submitWF,approveWF,rejectWF,wfStatusCls,
-      suppliers,loadSuppliers,newSupplier,editSupplier,supplierSubs,grantSupplierAccess,reviewSubmission,loadSupplierSubs,
+      suppliers,loadSuppliers,newSupplier,editSupplier,
       sbomRecords,importSbom,exportSbom,loadSbomRecords,
-      licenseScans,licenseResult,runLicenseScan,loadLicenseScans,licenseRiskCls,
+      licenseScans,newLicense,editLicense,loadLicenseScans,
       regulations,loadRegulations,
       aiAnalyses,aiResult,aiRunning,aiHtml,projectGaps,runAiAnalysis,loadAiAnalyses,loadProjectGaps,runProjectGap,viewProjectGapReport};
   }

@@ -54,15 +54,21 @@ class NodeCreate(BaseModel):
     name: str
     code: str = ""
     cra_class: str = "default"
+    owner_id: int | None = None
+    compliance_deadline: str | None = None  # ISO date string
+    collaborators: list = []
     description: str = ""
     meta: dict = {}
 
 
 class NodeUpdate(BaseModel):
-    """仅允许更新名称/编码/分类/描述/meta，防止篡改 node_type/parent_id。"""
+    """仅允许更新名称/编码/分类/描述/meta/负责人/合规期限/协作人员"""
     name: str | None = None
     code: str | None = None
     cra_class: str | None = None
+    owner_id: int | None = None
+    compliance_deadline: str | None = None
+    collaborators: list | None = None
     description: str | None = None
     meta: dict | None = None
 
@@ -74,6 +80,9 @@ class NodeOut(ORM):
     name: str
     code: str = ""
     cra_class: str
+    owner_id: int | None = None
+    compliance_deadline: datetime | None = None
+    collaborators: list = []
     description: str = ""
     meta: dict = {}
     created_at: datetime | None = None

@@ -56,6 +56,8 @@ class OrgNode(Base, TimestampMixin):
     code: Mapped[str] = mapped_column(String(64), default="")
     cra_class: Mapped[str] = mapped_column(String(24), default="default")  # default/important_1/important_2/critical
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    compliance_deadline: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    collaborators: Mapped[list] = mapped_column(JSON, default=list)  # [user_id, ...]
     description: Mapped[str] = mapped_column(Text, default="")
     meta: Mapped[dict] = mapped_column(JSON, default=dict)
 
@@ -297,11 +299,15 @@ class CAPA(Base, TimestampMixin):
 class Supplier(Base, TimestampMixin):
     __tablename__ = "suppliers"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(128))
-    contact: Mapped[str] = mapped_column(String(128), default="")
-    type: Mapped[str] = mapped_column(String(24), default="commercial")  # oss_steward/commercial
+    name: Mapped[str] = mapped_column(String(128))  # 供应商名称
+    contact_person: Mapped[str] = mapped_column(String(64), default="")  # 供应商联系人
+    contact_position: Mapped[str] = mapped_column(String(64), default="")  # 联系人职位
+    contact_info: Mapped[str] = mapped_column(String(128), default="")  # 供应商联系方式
+    type: Mapped[str] = mapped_column(String(24), default="商业供应商")  # 商业/开源/外包/服务/运维/其他
+    importance: Mapped[str] = mapped_column(String(16), default="一般")  # 重要/次重要/一般
+    contact: Mapped[str] = mapped_column(String(128), default="")  # 保留兼容
     risk_level: Mapped[str] = mapped_column(String(16), default="low")
-    note: Mapped[str] = mapped_column(Text, default="")
+    note: Mapped[str] = mapped_column(Text, default="")  # 备注
 
 
 class Component(Base, TimestampMixin):
@@ -414,16 +420,23 @@ class SupplierSubmission(Base, TimestampMixin):
 
 # ═══════════════════ SBOM 管理 ═══════════════════
 class SbomRecord(Base, TimestampMixin):
+    """SBOM管理 — 项目版本与SBOM文件一一对应"""
     __tablename__ = "sbom_records"
     id: Mapped[int] = mapped_column(primary_key=True)
     node_id: Mapped[int] = mapped_column(ForeignKey("org_nodes.id"), index=True)
-    format: Mapped[str] = mapped_column(String(16), default="CycloneDX")  # CycloneDX/SPDX
-    version: Mapped[str] = mapped_column(String(24), default="1.5")
+    project_name: Mapped[str] = mapped_column(String(128), default="")  # 关联项目名
+    version_name: Mapped[str] = mapped_column(String(128), default="")  # 版本名称
+    sbom_tool: Mapped[str] = mapped_column(String(64), default="软安SCA")  # SBOM生成工具
+    sbom_time: Mapped[str] = mapped_column(String(32), default="")  # SBOM生成时间
+    remark: Mapped[str] = mapped_column(Text, default="")  # 备注
     filename: Mapped[str] = mapped_column(String(256))
+    format: Mapped[str] = mapped_column(String(16), default="CycloneDX")
+    version: Mapped[str] = mapped_column(String(24), default="1.5")
     component_count: Mapped[int] = mapped_column(Integer, default=0)
     vuln_matched_count: Mapped[int] = mapped_column(Integer, default=0)
     raw_json: Mapped[dict] = mapped_column(JSON, default=dict)
     generated_by: Mapped[str] = mapped_column(String(64), default="")
+    product_version: Mapped[str] = mapped_column(String(128), default="")
 
 
 # ═══════════════════ 多法规框架 ═══════════════════
@@ -465,12 +478,17 @@ class NotificationRule(Base, TimestampMixin):
 
 # ═══════════════════ 许可证扫描结果 ═══════════════════
 class LicenseScan(Base, TimestampMixin):
+    """许可证管理 — 集成软安SCA数据同步，手动维护风险等级和IP合规"""
     __tablename__ = "license_scans"
     id: Mapped[int] = mapped_column(primary_key=True)
     node_id: Mapped[int] = mapped_column(ForeignKey("org_nodes.id"), index=True)
-    scan_type: Mapped[str] = mapped_column(String(16), default="quick")  # quick/deep/audit
+    product_version: Mapped[str] = mapped_column(String(128), default="")  # 产品版本号
+    license_count: Mapped[int] = mapped_column(Integer, default=0)  # 许可证总数
+    high_risk_count: Mapped[int] = mapped_column(Integer, default=0)  # 高危许可证数
+    risk_level: Mapped[str] = mapped_column(String(16), default="low")  # low/medium/high/critical（手动）
+    ip_compliant: Mapped[bool] = mapped_column(Boolean, default=True)  # 知识产权是否合规（手动）
+    scan_type: Mapped[str] = mapped_column(String(16), default="quick")
     total_deps: Mapped[int] = mapped_column(Integer, default=0)
-    risk_level: Mapped[str] = mapped_column(String(16), default="low")
     conflicts_error: Mapped[int] = mapped_column(Integer, default=0)
     conflicts_warning: Mapped[int] = mapped_column(Integer, default=0)
     result_json: Mapped[dict] = mapped_column(JSON, default=dict)

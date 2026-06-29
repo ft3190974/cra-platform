@@ -21,6 +21,10 @@ def list_vulns(node_id: int | None = None, db: Session = Depends(get_db),
     if node_id is not None:
         q = q.filter(Vulnerability.node_id == node_id)
     out = []
+    from ..models import OrgNode
+    node_names = {}
+    for n in db.query(OrgNode).all():
+        node_names[n.id] = n.name
     for v in q.order_by(Vulnerability.id.desc()).all():
         # 计算未修复时长（天数）
         first_seen = v.first_seen_at or v.found_at
@@ -31,7 +35,8 @@ def list_vulns(node_id: int | None = None, db: Session = Depends(get_db),
             unfixed_days = round((fixed - first_seen).total_seconds() / 86400, 1) if first_seen else None
         else:
             unfixed_days = round((now() - first_seen).total_seconds() / 86400, 1) if first_seen else None
-        out.append({"id": v.id, "node_id": v.node_id, "source": v.source, "cve_id": v.cve_id,
+        out.append({"id": v.id, "node_id": v.node_id, "node_name": node_names.get(v.node_id, ""),
+             "source": v.source, "cve_id": v.cve_id,
              "title": v.title, "severity": v.severity, "cvss_score": v.cvss_score,
              "cwe": v.cwe, "component": v.component, "status": v.status,
              "exploited": v.exploited, "found_at": v.found_at,

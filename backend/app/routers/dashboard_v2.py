@@ -13,6 +13,7 @@ dash2_router = APIRouter(prefix="/api/dashboard-v2", tags=["仪表盘V2"])
 def get_overview(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     """高管视角：全局合规态势概览。"""
     nodes = db.query(OrgNode).all()
+    projects = [n for n in nodes if n.node_type == "project"]
     products = [n for n in nodes if n.node_type == "product"]
     versions = [n for n in nodes if n.node_type == "version"]
 
@@ -21,27 +22,34 @@ def get_overview(db: Session = Depends(get_db), user: User = Depends(get_current
 
     vulns = db.query(Vulnerability).all()
     open_vulns = [v for v in vulns if v.status in ("open", "triaged")]
-    critical_vulns = [v for v in open_vulns if v.severity == "critical"]
+    critical_vulns = [v for v in vulns if v.severity == "critical"]  # 所有严重漏洞
 
-    overdue_reports = db.query(VulnReport).filter(VulnReport.status == "overdue").count()
+    # 合规逾期：已超过合规截止日期的产品/版本节点数
+    now_ts = now()
+    compliance_overdue = sum(1 for n in nodes if n.compliance_deadline and n.compliance_deadline < now_ts)
+
+    # 供应商数量
+    supplier_count = db.query(Supplier).count()
 
     risks = db.query(Risk).filter(Risk.status == "open").all()
 
     latest_scan = db.query(LicenseScan).order_by(LicenseScan.created_at.desc()).first()
 
-    pending_subs = db.query(SupplierSubmission).filter(SupplierSubmission.status == "submitted").count()
     pending_wfs = db.query(WorkflowInstance).filter(WorkflowInstance.status == "submitted").count()
 
     return {
-        "products_count": len(products),
+        "products_count": len(projects),
         "versions_count": len(versions),
+        "project_count": len(projects),
         "avg_readiness": avg_readiness,
+        "supplier_count": supplier_count,
+        "compliance_overdue": compliance_overdue,
         "open_vulns": len(open_vulns),
         "critical_vulns": len(critical_vulns),
-        "overdue_reports": overdue_reports,
+        "overdue_reports": 0,  # deprecated, use compliance_overdue
         "open_risks": len(risks),
         "license_risk": latest_scan.risk_level if latest_scan else "n/a",
-        "pending_submissions": pending_subs,
+        "pending_submissions": 0,
         "pending_workflows": pending_wfs,
         "vuln_by_severity": {
             "critical": len([v for v in open_vulns if v.severity == "critical"]),

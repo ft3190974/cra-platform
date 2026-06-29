@@ -1,4 +1,6 @@
 """合规对象树路由：事业部→项目→产品→版本 四层结构。"""
+from datetime import datetime
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -21,7 +23,10 @@ _CONFORMITY = {
 
 def _node_dict(n: OrgNode) -> dict:
     return {"id": n.id, "parent_id": n.parent_id, "node_type": n.node_type, "name": n.name,
-            "code": n.code, "cra_class": n.cra_class, "description": n.description, "meta": n.meta}
+            "code": n.code, "cra_class": n.cra_class, "owner_id": n.owner_id,
+            "compliance_deadline": n.compliance_deadline.isoformat() if n.compliance_deadline else None,
+            "collaborators": n.collaborators or [],
+            "description": n.description, "meta": n.meta}
 
 
 @nodes_router.get("/tree")
@@ -39,8 +44,8 @@ def get_tree(db: Session = Depends(get_db), _: User = Depends(get_current_user))
 
 @nodes_router.get("/projects")
 def list_projects(db: Session = Depends(get_db), _: User = Depends(get_current_user)):
-    """返回所有项目(project)级别节点及其聚合统计，用于项目详情卡片页。"""
-    projects = db.query(OrgNode).filter(OrgNode.node_type == "project").all()
+    """返回所有版本(version)级别节点及其聚合统计，用于项目详情卡片页。"""
+    projects = db.query(OrgNode).filter(OrgNode.node_type == "version").all()
     result = []
     for p in projects:
         assessments = db.query(Assessment).filter(Assessment.node_id == p.id).all()
@@ -95,7 +100,11 @@ def create_node(payload: NodeCreate, db: Session = Depends(get_db),
         expected = _CHILD_TYPE.get(parent.node_type)
         if expected and payload.node_type != expected:
             raise HTTPException(400, f"{parent.node_type} 的子节点应为 {expected}")
-    n = OrgNode(**payload.model_dump())
+    data = payload.model_dump()
+    if data.get("compliance_deadline"):
+        try: data["compliance_deadline"] = datetime.fromisoformat(data["compliance_deadline"])
+        except (ValueError, TypeError): data["compliance_deadline"] = None
+    n = OrgNode(**data)
     db.add(n); db.commit(); db.refresh(n)
     log_action(db, user, "CREATE", "node", n.id, {"name": n.name, "type": n.node_type})
     return n
@@ -108,7 +117,11 @@ def update_node(node_id: int, payload: NodeUpdate, db: Session = Depends(get_db)
     if not n:
         raise HTTPException(404, "未找到节点")
     # 仅更新显式传入的非空字段
-    for k, v in payload.model_dump(exclude_unset=True).items():
+    data = payload.model_dump(exclude_unset=True)
+    if "compliance_deadline" in data and data["compliance_deadline"]:
+        try: data["compliance_deadline"] = datetime.fromisoformat(data["compliance_deadline"])
+        except (ValueError, TypeError): data["compliance_deadline"] = None
+    for k, v in data.items():
         setattr(n, k, v)
     db.commit()
     log_action(db, user, "UPDATE", "node", node_id, {})
