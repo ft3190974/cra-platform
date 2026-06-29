@@ -105,6 +105,8 @@ class VulnCreate(BaseModel):
     cwe: str = ""
     component: str = ""
     exploited: bool = False
+    first_seen_at: str | None = None
+    note: str = ""
 
 
 class VulnUpdate(BaseModel):
@@ -118,6 +120,8 @@ class VulnUpdate(BaseModel):
     cwe: str | None = None
     component: str | None = None
     fixed_at: datetime | None = None
+    first_seen_at: str | None = None
+    note: str | None = None
 
 
 # ── 风险 ──

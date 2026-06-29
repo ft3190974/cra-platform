@@ -7,30 +7,114 @@
 <script src="/static/vendor/vue.js"></script>
 <link rel="stylesheet" href="/static/vendor/tailwind-local.css">
 <script src="/static/vendor/echarts.js"></script>
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+<symbol id="cra-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></symbol>
+<symbol id="cra-chart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+<symbol id="cra-tree" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L8 6h3v6H8l4 4 4-4h-3V6h3z"/><path d="M5 22h14"/></symbol>
+<symbol id="cra-folder" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></symbol>
+<symbol id="cra-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></symbol>
+<symbol id="cra-medal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
+<symbol id="cra-bug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="6" width="8" height="14" rx="4"/><path d="M19 7l-3 2"/><path d="M5 7l3 2"/><path d="M19 13h-3"/><path d="M5 13h3"/><path d="M19 19l-3-2"/><path d="M5 19l3-2"/><path d="M12 2v4"/></symbol>
+<symbol id="cra-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></symbol>
+<symbol id="cra-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+<symbol id="cra-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></symbol>
+<symbol id="cra-truck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></symbol>
+<symbol id="cra-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></symbol>
+<symbol id="cra-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+<symbol id="cra-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22v-5"/><path d="M9 7V2"/><path d="M15 7V2"/><path d="M6 13V8h12v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4z"/></symbol>
+<symbol id="cra-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></symbol>
+<symbol id="cra-bot" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="8" width="18" height="12" rx="2"/><circle cx="12" cy="4" r="1"/><path d="M12 5v3"/><circle cx="8" cy="14" r="1"/><circle cx="16" cy="14" r="1"/></symbol>
+<symbol id="cra-scroll" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 21h12a2 2 0 0 0 2-2v-2H10v2a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v3h4"/><path d="M19 17V5a2 2 0 0 0-2-2H4"/></symbol>
+<symbol id="cra-settings" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></symbol>
+<symbol id="cra-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></symbol>
+<symbol id="cra-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+<symbol id="cra-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+<symbol id="cra-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></symbol>
+<symbol id="cra-zap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+<symbol id="cra-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></symbol>
+<symbol id="cra-server" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></symbol>
+<symbol id="cra-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></symbol>
+<symbol id="cra-timer" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M5 3 2 6"/><path d="m22 6-3-3"/></symbol>
+<symbol id="cra-gauge" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14l4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+</svg>
 <style>
   [v-cloak]{display:none}
+  :root{
+    --cra-brand:#0B1F3A;--cra-brand-light:#0E2A52;--cra-accent:#0066FF;--cra-accent-light:#3D8BFF;
+    --cra-success:#06B6D4;--cra-warning:#F59E0B;--cra-danger:#EF4444;
+    --cra-bg:#F1F5F9;--cra-surface:#FFFFFF;--cra-sidebar:#0B1F3A;
+    --cra-text:#0F172A;--cra-text2:#475569;--cra-text3:#94A3B8;
+    --cra-border:#E2E8F0;--cra-radius:10px;--cra-radius-lg:14px;
+    --cra-shadow:0 1px 3px rgba(0,0,0,0.06);--cra-shadow-md:0 4px 16px rgba(0,0,0,0.08);--cra-shadow-lg:0 12px 36px rgba(0,0,0,0.12);
+    --cra-trans:0.25s cubic-bezier(0.4,0,0.2,1);
+    --cra-grad:linear-gradient(135deg,#0B1F3A,#0E2A52);
+    --cra-grad-accent:linear-gradient(135deg,#0066FF,#06B6D4);
+  }
   ::-webkit-scrollbar{width:8px;height:8px}
+  ::-webkit-scrollbar-track{background:transparent}
   ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+  ::-webkit-scrollbar-thumb:hover{background:#94a3b8}
   .doc-content h1{font-size:1.5rem;font-weight:700;margin:.6em 0}
   .doc-content h2{font-size:1.15rem;font-weight:600;margin:.5em 0;color:#1e40af}
   .doc-content p{margin:.4em 0;line-height:1.7}
   .doc-content pre{background:#f8fafc;padding:1em;border-radius:8px;overflow:auto;font-size:12px}
+  /* ── 微交互 ── */
+  @keyframes cra-fade-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes cra-pulse{0%,100%{opacity:1}50%{opacity:0.5}}
+  .cra-page{animation:cra-fade-in 0.3s ease-out both}
+  .cra-stagger>*{animation:cra-fade-in 0.4s ease-out both}
+  .cra-stagger>*:nth-child(1){animation-delay:0.04s}.cra-stagger>*:nth-child(2){animation-delay:0.08s}
+  .cra-stagger>*:nth-child(3){animation-delay:0.12s}.cra-stagger>*:nth-child(4){animation-delay:0.16s}
+  .cra-stagger>*:nth-child(5){animation-delay:0.2s}.cra-stagger>*:nth-child(6){animation-delay:0.24s}
+  /* ── 侧边栏 ── */
+  .cra-nav-item{display:flex;align-items:center;gap:10px;padding:9px 16px;cursor:pointer;font-size:13px;color:rgba(255,255,255,0.6);transition:var(--cra-trans);border-left:3px solid transparent;position:relative}
+  .cra-nav-item:hover{color:#fff;background:rgba(255,255,255,0.05)}
+  .cra-nav-item.active{color:#fff;background:rgba(0,102,255,0.12);border-left-color:var(--cra-accent)}
+  .cra-nav-item.active svg{color:var(--cra-accent-light)}
+  .cra-nav-group-title{padding:16px 16px 6px;font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:1.5px}
+  /* ── 卡片 ── */
+  .cra-card{background:var(--cra-surface);border:1px solid var(--cra-border);border-radius:var(--cra-radius-lg);box-shadow:var(--cra-shadow);transition:var(--cra-trans)}
+  .cra-card:hover{box-shadow:var(--cra-shadow-md);transform:translateY(-2px)}
+  .cra-card-header{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--cra-border)}
+  .cra-card-title{font-size:14px;font-weight:700;color:var(--cra-text)}
+  /* ── 表格 ── */
+  .cra-table{width:100%;font-size:13px;border-collapse:collapse}
+  .cra-table thead th{background:#F8FAFC;color:var(--cra-text2);font-weight:600;text-align:left;padding:10px 12px;border-bottom:2px solid var(--cra-border);font-size:12px;text-transform:uppercase;letter-spacing:0.5px}
+  .cra-table tbody td{padding:10px 12px;border-bottom:1px solid var(--cra-border);color:var(--cra-text)}
+  .cra-table tbody tr:hover{background:#F8FAFC}
+  .cra-table tbody tr:nth-child(even){background:#FCFCFD}
+  .cra-table tbody tr:nth-child(even):hover{background:#F8FAFC}
+  /* ── Badge ── */
+  .cra-badge{display:inline-flex;align-items:center;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:600}
+  .cra-badge-danger{background:#FEE2E2;color:#DC2626}
+  .cra-badge-warning{background:#FEF3C7;color:#D97706}
+  .cra-badge-success{background:#D1FAE5;color:#059669}
+  .cra-badge-info{background:#DBEAFE;color:#2563EB}
+  .cra-badge-slate{background:#F1F5F9;color:#475569}
+  /* ── 输入框 ── */
+  .cra-input{width:100%;border:1px solid var(--cra-border);border-radius:8px;padding:9px 12px;font-size:13px;transition:var(--cra-trans);outline:none}
+  .cra-input:focus{border-color:var(--cra-accent);box-shadow:0 0 0 3px rgba(0,102,255,0.1)}
+  /* ── 数字字体 ── */
+  .cra-num{font-family:'JetBrains Mono','SF Mono','Consolas',monospace;font-variant-numeric:tabular-nums}
 </style>
 </head>
-<body class="bg-slate-100">
+<body style="background:var(--cra-bg)">
 <div id="app" v-cloak>
   <!-- 登录页 -->
-  <div v-if="!token" class="min-h-screen flex items-center justify-center">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-96">
+  <div v-if="!token" class="min-h-screen flex items-center justify-center" style="background:var(--cra-grad)">
+    <div class="cra-card p-8 w-96" style="box-shadow:var(--cra-shadow-lg)">
       <div class="text-center mb-6">
-        <div class="text-3xl font-bold text-blue-700">CRA 合规平台（华南Test）</div>
-        <div class="text-sm text-slate-500 mt-1">欧盟网络弹性法案 · 产品合规</div>
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--cra-grad-accent);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+          <svg width="24" height="24" style="color:#fff"><use href="#cra-shield"/></svg>
+        </div>
+        <div style="font-size:22px;font-weight:800;color:var(--cra-brand)">CRA 合规平台</div>
+        <div style="font-size:12px;color:var(--cra-text3);margin-top:4px">欧盟网络弹性法案 · 产品合规</div>
       </div>
-      <input v-model="login.username" placeholder="用户名" class="w-full border rounded-lg px-3 py-2 mb-3"/>
-      <input v-model="login.password" type="password" placeholder="密码" @keyup.enter="doLogin" class="w-full border rounded-lg px-3 py-2 mb-3"/>
-      <button @click="doLogin" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-medium">登录</button>
+      <input v-model="login.username" placeholder="用户名" autocomplete="off" class="cra-input mb-3"/>
+      <input v-model="login.password" type="password" placeholder="密码" autocomplete="new-password" @keyup.enter="doLogin" class="cra-input mb-3"/>
+      <label class="flex items-center gap-2 text-xs mb-3 cursor-pointer" style="color:var(--cra-text2)"><input type="checkbox" v-model="login.remember" class="w-auto"/> 记住账号密码</label>
+      <button @click="doLogin" class="w-full text-white rounded-lg py-2.5 font-medium transition" style="background:var(--cra-grad-accent);border:none" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">登录</button>
       <div v-if="loginErr" class="text-red-500 text-sm mt-3 text-center">{{loginErr}}</div>
-      <div class="text-xs text-slate-400 mt-4 text-center">演示账号：admin / admin123</div>
       <div v-if="isGH" class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200">
         <div class="text-xs font-medium text-amber-700 mb-2">检测到 GitHub Pages 部署，请配置后端地址：</div>
         <input v-model="apiBase" placeholder="http://localhost:8090" class="w-full border rounded px-2 py-1 text-xs mb-2"/>
@@ -42,17 +126,37 @@
   <!-- 主界面 -->
   <div v-else class="flex h-screen">
     <!-- 侧边栏 -->
-    <aside class="w-56 bg-slate-900 text-slate-200 flex flex-col">
-      <div class="p-4 text-lg font-bold text-white border-b border-slate-700">CRA 合规平台（华南Test）</div>
-      <nav class="flex-1 overflow-y-auto py-2">
-        <a v-for="m in menus" :key="m.k" @click="view=m.k"
-           :class="['flex items-center gap-2 px-4 py-2.5 cursor-pointer text-sm', view===m.k?'bg-blue-600 text-white':'hover:bg-slate-800']">
-          <span>{{m.icon}}</span>{{m.label}}
-        </a>
+    <aside class="flex flex-col text-white" style="width:220px;background:var(--cra-sidebar)">
+      <div class="flex items-center gap-2 px-4 py-4 border-b" style="border-color:rgba(255,255,255,0.08)">
+        <div style="width:32px;height:32px;border-radius:8px;background:var(--cra-grad-accent);display:flex;align-items:center;justify-content:center">
+          <svg width="18" height="18" style="color:#fff"><use href="#cra-shield"/></svg>
+        </div>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#fff">CRA 合规平台</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)">华南Test</div>
+        </div>
+      </div>
+      <nav class="flex-1 overflow-y-auto" style="scrollbar-width:thin">
+        <template v-for="g in menuGroups" :key="g.title">
+          <div class="cra-nav-group-title">{{g.title}}</div>
+          <a v-for="m in g.items" :key="m.k" @click="view=m.k"
+             :class="['cra-nav-item',view===m.k?'active':'']">
+            <svg width="16" height="16" style="flex-shrink:0"><use :href="'#'+m.icon"/></svg>
+            <span>{{m.label}}</span>
+          </a>
+        </template>
       </nav>
-      <div class="p-3 border-t border-slate-700 text-xs">
-        <div>{{user.full_name}} ({{roleLabel(user.role)}})</div>
-        <a @click="logout" class="text-blue-400 cursor-pointer">退出登录</a>
+      <div class="px-3 py-3 border-t flex items-center gap-2" style="border-color:rgba(255,255,255,0.08)">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--cra-grad-accent);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" style="color:#fff"><use href="#cra-user"/></svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <div style="font-size:12px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{user.full_name}}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.4)">{{roleLabel(user.role)}}</div>
+        </div>
+        <a @click="logout" class="cursor-pointer" style="color:rgba(255,255,255,0.4);transition:var(--cra-trans)" onmouseover="this.style.color='#EF4444'" onmouseout="this.style.color='rgba(255,255,255,0.4)'">
+          <svg width="16" height="16"><use href="#cra-logout"/></svg>
+        </a>
       </div>
     </aside>
 
@@ -62,35 +166,111 @@
       <div v-if="loading" class="fixed top-0 left-0 right-0 z-50 h-1 bg-blue-200 overflow-hidden" style="transition:opacity .2s">
         <div class="h-full bg-blue-600 animate-pulse" style="width:60%"></div>
       </div>
-      <header class="bg-white shadow-sm px-6 py-3 flex justify-between items-center sticky top-0 z-10">
-        <h1 class="text-xl font-semibold text-slate-800">{{menuLabel}}</h1>
-        <div class="text-sm text-slate-500" v-if="curNode">当前对象：<span class="font-medium text-blue-700">{{curNode.name}}</span></div>
+      <header class="bg-white px-6 py-3 flex justify-between items-center sticky top-0 z-10" style="box-shadow:var(--cra-shadow)">
+        <div class="flex items-center gap-3">
+          <h1 class="text-lg font-bold" style="color:var(--cra-text)">{{menuLabel}}</h1>
+          <span v-if="curNode" class="cra-badge cra-badge-info">{{curNode.name}}</span>
+        </div>
+        <div class="flex items-center gap-4">
+          <div class="flex items-center gap-1.5 text-xs" style="color:var(--cra-text3)">
+            <svg width="14" height="14"><use href="#cra-clock"/></svg>
+            <span>{{new Date().toLocaleDateString('zh-CN')}}</span>
+          </div>
+          <div class="relative cursor-pointer" style="color:var(--cra-text2)">
+            <svg width="20" height="20"><use href="#cra-bell"/></svg>
+            <span v-if="dash.report_alerts&&dash.report_alerts.length" class="absolute -top-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center text-[9px] text-white" style="background:var(--cra-danger)">{{dash.report_alerts.length}}</span>
+          </div>
+        </div>
       </header>
       <div class="p-6">
 
         <!-- 仪表盘 -->
-        <div v-if="view==='dashboard'">
-          <div class="grid grid-cols-4 gap-4 mb-6">
-            <div v-for="c in dashCards" :key="c.label" class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="text-3xl font-bold" :class="c.color">{{c.value}}</div>
-              <div class="text-sm text-slate-500 mt-1">{{c.label}}</div>
+        <div v-if="view==='dashboard'" class="cra-page">
+          <!-- KPI 卡片行 -->
+          <div class="grid grid-cols-4 gap-4 mb-6 cra-stagger">
+            <div class="cra-card p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">合规产品</span>
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(0,102,255,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-accent)"><use href="#cra-server"/></svg></div>
+              </div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-accent)">{{dash.products_count||0}}</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">已在管产品数</div>
+            </div>
+            <div class="cra-card p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">严重漏洞</span>
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(239,68,68,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-danger)"><use href="#cra-flame"/></svg></div>
+              </div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-danger)">{{dash.critical_vulns||0}}</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">需立即处理</div>
+            </div>
+            <div class="cra-card p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">逾期通报</span>
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(245,158,11,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-warning)"><use href="#cra-timer"/></svg></div>
+              </div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-warning)">{{dash.overdue_reports||0}}</div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">CRA 第14条</div>
+            </div>
+            <div class="cra-card p-5">
+              <div class="flex items-center justify-between mb-2">
+                <span style="font-size:12px;color:var(--cra-text3);font-weight:600">平均就绪度</span>
+                <div style="width:40px;height:40px;border-radius:10px;background:rgba(6,182,212,0.08);display:flex;align-items:center;justify-content:center"><svg width="20" height="20" style="color:var(--cra-success)"><use href="#cra-gauge"/></svg></div>
+              </div>
+              <div class="cra-num" style="font-size:28px;font-weight:800;color:var(--cra-success)">{{dash.avg_readiness||0}}<span style="font-size:16px">%</span></div>
+              <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">全产品平均</div>
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">漏洞严重程度分布</div><div ref="sevChart" style="height:280px"></div></div>
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">各产品合规就绪度</div><div ref="readyChart" style="height:280px"></div></div>
+
+          <!-- 图表 + 通报提醒 -->
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="cra-card">
+              <div class="cra-card-header"><span class="cra-card-title">漏洞严重程度分布</span></div>
+              <div class="p-4"><div ref="sevChart" style="height:260px"></div></div>
+            </div>
+            <div class="cra-card">
+              <div class="cra-card-header"><span class="cra-card-title">各产品合规就绪度</span></div>
+              <div class="p-4"><div ref="readyChart" style="height:260px"></div></div>
+            </div>
           </div>
-          <div class="bg-white rounded-xl p-4 shadow-sm mt-4" v-if="dash.report_alerts && dash.report_alerts.length">
-            <div class="font-medium mb-2 text-red-600">⚠ 通报时限提醒（CRA 第14条）</div>
-            <div v-for="(a,i) in dash.report_alerts" :key="i" class="text-sm py-1 flex gap-3">
-              <span class="px-2 rounded text-xs" :class="a.status==='overdue'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700'">{{a.status==='overdue'?'已逾期':'待提交'}}</span>
-              <span>{{reportLabel(a.type)}} → {{a.target}}</span><span class="text-slate-400">截止 {{fmtDate(a.due_at)}}</span>
+
+          <!-- 通报提醒 + 快捷操作 -->
+          <div class="grid grid-cols-3 gap-4">
+            <div class="cra-card col-span-2" v-if="dash.report_alerts && dash.report_alerts.length">
+              <div class="cra-card-header">
+                <span class="cra-card-title" style="color:var(--cra-danger)">⚠ 通报时限提醒（CRA 第14条）</span>
+                <span class="cra-badge cra-badge-danger">{{dash.report_alerts.length}} 项</span>
+              </div>
+              <div class="p-2">
+                <div v-for="(a,i) in dash.report_alerts" :key="i" class="flex items-center gap-3 px-3 py-2" style="border-bottom:1px solid var(--cra-border)">
+                  <span :class="['cra-badge',a.status==='overdue'?'cra-badge-danger':'cra-badge-warning']">{{a.status==='overdue'?'已逾期':'待提交'}}</span>
+                  <span style="font-size:13px;color:var(--cra-text)">{{reportLabel(a.type)}} → {{a.target}}</span>
+                  <span class="cra-num ml-auto" style="font-size:11px;color:var(--cra-text3)">截止 {{fmtDate(a.due_at)}}</span>
+                </div>
+              </div>
+            </div>
+            <div class="cra-card p-5">
+              <div class="cra-card-title mb-3">快捷操作</div>
+              <div class="flex flex-col gap-2">
+                <button @click="view='assess'" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition" style="background:rgba(0,102,255,0.06);color:var(--cra-accent)" onmouseover="this.style.background='rgba(0,102,255,0.12)'" onmouseout="this.style.background='rgba(0,102,255,0.06)'">
+                  <svg width="16" height="16"><use href="#cra-check"/></svg> 发起 CRA 评估
+                </button>
+                <button @click="view='vulns'" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition" style="background:rgba(239,68,68,0.06);color:var(--cra-danger)" onmouseover="this.style.background='rgba(239,68,68,0.12)'" onmouseout="this.style.background='rgba(239,68,68,0.06)'">
+                  <svg width="16" height="16"><use href="#cra-bug"/></svg> 漏洞通报
+                </button>
+                <button @click="view='documents'" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition" style="background:rgba(6,182,212,0.06);color:var(--cra-success)" onmouseover="this.style.background='rgba(6,182,212,0.12)'" onmouseout="this.style.background='rgba(6,182,212,0.06)'">
+                  <svg width="16" height="16"><use href="#cra-doc"/></svg> 生成合规文档
+                </button>
+                <button @click="view='ai'" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition" style="background:rgba(124,58,237,0.06);color:#7C3AED" onmouseover="this.style.background='rgba(124,58,237,0.12)'" onmouseout="this.style.background='rgba(124,58,237,0.06)'">
+                  <svg width="16" height="16"><use href="#cra-bot"/></svg> AI 差距分析
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- 合规对象树 -->
-        <div v-if="view==='nodes'" class="flex gap-4">
+        <div v-if="view==='nodes'" class="cra-page flex gap-4">
           <div class="w-1/3 bg-white rounded-xl p-4 shadow-sm">
             <div class="flex justify-between items-center mb-3">
               <span class="font-medium">组织/产品树</span>
@@ -140,8 +320,8 @@
             <div class="flex justify-between mb-3">
               <span class="font-medium">{{view==='samm'?'SAMM 成熟度评估列表':'CRA 评估列表'}}</span>
               <button @click="newAssessment(view)" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 对当前对象发起{{view==='samm'?'SAMM':'CRA'}}评估</button></div>
-            <div v-if="view==='samm'" class="text-xs text-slate-500 mb-3 p-2 bg-blue-50 rounded">OWASP SAMM v2：5 大业务功能 × 15 实践 × 3 等级。每个评估步骤均可上传文档记录并填写备注。提交后成熟度分将自动折算并入 CRA 评估体系。</div>
-            <table class="w-full text-sm">
+            <div v-if="view==='samm'" class="cra-page text-xs text-slate-500 mb-3 p-2 bg-blue-50 rounded">OWASP SAMM v2：5 大业务功能 × 15 实践 × 3 等级。每个评估步骤均可上传文档记录并填写备注。提交后成熟度分将自动折算并入 CRA 评估体系。</div>
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>状态</th><th>{{view==='samm'?'成熟度':'就绪度'}}</th><th>评分</th><th></th></tr></thead>
               <tbody><tr v-for="a in assessments" :key="a.id" class="border-b hover:bg-slate-50">
                 <td class="py-2">{{a.title}}</td><td>{{statusLabel(a.status)}}</td>
@@ -186,11 +366,11 @@
                 </div>
               </div>
               <div class="space-y-4">
-                <div class="bg-white rounded-xl p-4 shadow-sm">
+                <div class="cra-card p-5">
                   <div class="font-medium text-sm mb-2">{{isSamm?'SAMM 成熟度雷达':'成熟度雷达'}}</div><div ref="radarChart" style="height:240px"></div>
                   <div class="text-center"><span class="text-2xl font-bold text-blue-600">{{curAssessment.readiness}}%</span><span class="text-xs text-slate-500">{{isSamm?' 成熟度':' 就绪度'}}</span></div>
                 </div>
-                <div v-if="!isSamm" class="bg-white rounded-xl p-4 shadow-sm">
+                <div v-if="!isSamm" class="cra-card p-5">
                   <div class="font-medium text-sm mb-2">整改方向建议</div>
                   <button @click="loadRemediation" class="text-xs bg-blue-600 text-white px-2 py-1 rounded mb-2">生成整改建议</button>
                   <div v-for="(r,i) in remediation" :key="i" class="text-xs border-l-2 border-amber-400 pl-2 mb-2">
@@ -213,32 +393,35 @@
         </div>
 
         <!-- 漏洞管理 -->
-        <div v-if="view==='vulns'">
+        <div class="cra-page" v-if="view==='vulns'">
           <div class="flex gap-2 mb-3">
             <button @click="newVuln" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded" :disabled="!curNode">+ 录入漏洞</button>
             <button @click="view='reports'" class="text-xs border px-3 py-1.5 rounded">通报时限看板</button>
           </div>
-          <div class="bg-white rounded-xl p-4 shadow-sm">
-            <table class="w-full text-sm">
-              <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>来源</th><th>严重度</th><th>CVSS</th><th>状态</th><th>已被利用</th><th></th></tr></thead>
-              <tbody><tr v-for="v in vulns" :key="v.id" class="border-b hover:bg-slate-50">
-                <td class="py-2">{{v.title}}<span class="text-xs text-slate-400 ml-1">{{v.cve_id}}</span></td>
-                <td><span class="text-xs px-1.5 py-0.5 bg-slate-100 rounded">{{v.source.toUpperCase()}}</span></td>
+          <div class="cra-card p-5">
+            <table class="cra-table">
+              <thead><tr><th>标题</th><th>来源</th><th>严重度</th><th>CVSS</th><th>状态</th><th>首次发现</th><th>未修复时长</th><th>修复时间</th><th></th></tr></thead>
+              <tbody><tr v-for="v in vulns" :key="v.id">
+                <td>{{v.title}}<span style="font-size:11px;color:var(--cra-text3);margin-left:4px">{{v.cve_id}}</span></td>
+                <td><span class="cra-badge cra-badge-slate">{{v.source.toUpperCase()}}</span></td>
                 <td><span :class="sevClass(v.severity)">{{sevLabel(v.severity)}}</span></td>
-                <td>{{v.cvss_score}}</td><td>{{vulnStatusLabel(v.status)}}</td>
-                <td>{{v.exploited?'是':'否'}}</td>
-                <td><button @click="editVuln(v)" class="text-blue-600 text-xs">编辑</button></td></tr></tbody>
+                <td class="cra-num">{{v.cvss_score}}</td>
+                <td><span class="cra-badge" :class="v.status==='fixed'?'cra-badge-success':'cra-badge-warning'">{{vulnStatusLabel(v.status)}}</span></td>
+                <td class="cra-num" style="font-size:12px;color:var(--cra-text2)">{{v.first_seen_at?fmtDate(v.first_seen_at):fmtDate(v.found_at)}}</td>
+                <td><span v-if="v.unfixed_days!=null" class="cra-num" :style="v.status==='fixed'?'color:var(--cra-success);font-size:12px':'color:var(--cra-danger);font-size:12px;font-weight:600'">{{v.unfixed_days}}天</span><span v-else style="color:var(--cra-text3)">—</span></td>
+                <td class="cra-num" style="font-size:12px;color:var(--cra-success)" v-if="v.fixed_at">{{fmtDate(v.fixed_at)}}</td><td v-else style="color:var(--cra-text3)">未修复</td>
+                <td><button @click="editVuln(v)" style="color:var(--cra-accent);font-size:12px;cursor:pointer">编辑</button></td></tr></tbody>
             </table>
-            <div v-if="!vulns.length" class="text-center text-slate-400 py-6">暂无漏洞。可录入或在「集成」中从检测工具同步。</div>
+            <div v-if="!vulns.length" class="text-center py-6" style="color:var(--cra-text3)">暂无漏洞。可录入或在「集成」中从检测工具同步。</div>
           </div>
         </div>
 
         <!-- 通报看板 -->
-        <div v-if="view==='reports'">
+        <div class="cra-page" v-if="view==='reports'">
           <button @click="view='vulns'" class="text-sm text-blue-600 mb-3">← 返回漏洞</button>
-          <div class="bg-white rounded-xl p-4 shadow-sm">
+          <div class="cra-card p-5">
             <div class="font-medium mb-3">CRA 第14条 漏洞/事件通报时限看板</div>
-            <table class="w-full text-sm">
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">漏洞</th><th>阶段</th><th>提交目标</th><th>剩余时间</th><th>状态</th><th></th></tr></thead>
               <tbody><tr v-for="r in reports" :key="r.id" class="border-b">
                 <td class="py-2">{{r.vuln}} {{r.cve}}</td><td>{{reportLabel(r.report_type)}}</td><td>{{r.target}}</td>
@@ -251,10 +434,10 @@
         </div>
 
         <!-- 风险登记册 -->
-        <div v-if="view==='risks'">
+        <div class="cra-page" v-if="view==='risks'">
           <button @click="newRisk" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3" :disabled="!curNode">+ 登记风险</button>
-          <div class="bg-white rounded-xl p-4 shadow-sm">
-            <table class="w-full text-sm">
+          <div class="cra-card p-5">
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">风险</th><th>类别</th><th>固有</th><th>剩余</th><th>处置</th><th>状态</th></tr></thead>
               <tbody><tr v-for="r in risks" :key="r.id" class="border-b"><td class="py-2">{{r.title}}</td><td>{{r.category}}</td>
                 <td>{{r.inherent_score}}</td><td>{{r.residual_score}}</td><td>{{r.treatment}}</td><td>{{r.status}}</td></tr></tbody>
@@ -264,18 +447,23 @@
         </div>
 
         <!-- 文档与模板 -->
-        <div v-if="view==='documents'" class="grid grid-cols-3 gap-4">
-          <div class="bg-white rounded-xl p-4 shadow-sm">
-            <div class="font-medium mb-2">样板模板库</div>
-            <div v-for="t in templates" :key="t.id" class="p-2 rounded hover:bg-slate-50 cursor-pointer border-b" @click="genFromTemplate(t)">
-              <div class="text-sm font-medium">{{t.name}}</div>
-              <div class="text-xs text-slate-400">{{t.cra_ref}} · {{t.stage}}</div>
+        <div v-if="view==='documents'" class="cra-page grid grid-cols-3 gap-4">
+          <div class="cra-card p-5">
+            <div style="font-size:14px;font-weight:700;margin-bottom:12px;color:var(--cra-text)">样板模板库</div>
+            <div v-for="t in templates" :key="t.id" class="p-3 rounded-lg cursor-pointer transition" style="border:1px solid var(--cra-border);margin-bottom:8px" onmouseover="this.style.borderColor='var(--cra-accent)'" onmouseout="this.style.borderColor='var(--cra-border)'">
+              <div @click="genFromTemplate(t)">
+                <div style="font-size:13px;font-weight:600;color:var(--cra-text)">{{t.name}}</div>
+                <div style="font-size:11px;color:var(--cra-text3);margin-top:2px">{{t.cra_ref}} · {{t.stage}}</div>
+              </div>
+              <div style="margin-top:6px;display:flex;gap:8px">
+                <button @click="genFromTemplate(t)" style="font-size:11px;color:var(--cra-accent);cursor:pointer;padding:2px 8px;border-radius:4px;background:rgba(0,102,255,0.06)">生成文档</button>
+                <button @click="viewDemo(t)" style="font-size:11px;color:var(--cra-text2);cursor:pointer;padding:2px 8px;border-radius:4px;background:var(--cra-bg,#F1F5F9)">查看示例</button>
+              </div>
             </div>
           </div>
-          <div class="col-span-2 bg-white rounded-xl p-4 shadow-sm">
-            <div class="flex justify-between mb-2"><span class="font-medium">已生成文档</span>
-              <span class="text-xs text-slate-400" v-if="!curNode">点击左侧模板生成（需先在对象树选择节点）</span></div>
-            <table class="w-full text-sm">
+          <div class="col-span-2 cra-card p-5">
+            <div class="flex justify-between mb-2"><span style="font-size:14px;font-weight:700;color:var(--cra-text)">已生成文档</span></div>
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
               <tbody><tr v-for="d in documents" :key="d.id" class="border-b">
                 <td class="py-2">{{d.title}}</td><td>{{d.doc_type}}</td><td>{{statusLabel(d.status)}}</td>
@@ -290,10 +478,10 @@
         </div>
 
         <!-- 集成 -->
-        <div v-if="view==='integrations'">
+        <div class="cra-page" v-if="view==='integrations'">
           <button @click="newIntegration" class="text-xs bg-blue-600 text-white px-3 py-1.5 rounded mb-3">+ 新建集成</button>
-          <div class="bg-white rounded-xl p-4 shadow-sm">
-            <table class="w-full text-sm">
+          <div class="cra-card p-5">
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">名称</th><th>类型</th><th>端点</th><th>上次同步</th><th></th></tr></thead>
               <tbody><tr v-for="i in integrations" :key="i.id" class="border-b">
                 <td class="py-2">{{i.name}}</td><td><span class="text-xs px-1.5 py-0.5 bg-slate-100 rounded">{{i.kind}}</span></td>
@@ -305,10 +493,10 @@
         </div>
 
         <!-- 审计日志 -->
-        <div v-if="view==='audit'">
-          <div class="bg-white rounded-xl p-4 shadow-sm">
+        <div class="cra-page" v-if="view==='audit'">
+          <div class="cra-card p-5">
             <div class="font-medium mb-3">操作审计日志</div>
-            <table class="w-full text-sm">
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b"><th class="py-2">时间</th><th>用户</th><th>操作</th><th>资源</th><th>详情</th></tr></thead>
               <tbody><tr v-for="a in auditLogs" :key="a.id" class="border-b">
                 <td class="py-2 text-xs">{{fmtDate(a.created_at)}}</td><td>{{a.username}}</td>
@@ -320,27 +508,11 @@
 
         <!-- ═══════════ V2 新增模块 ═══════════ -->
 
-        <!-- 高管态势 -->
-        <div v-if="view==='dashboard-v2'">
-          <div class="grid grid-cols-5 gap-4 mb-6">
-            <div v-for="c in dashv2Cards" :key="c.label" class="bg-white rounded-xl p-4 shadow-sm">
-              <div class="text-2xl font-bold" :class="c.color">{{c.value}}</div><div class="text-xs text-slate-500 mt-1">{{c.label}}</div>
-            </div>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">产品就绪度排行</div><div ref="ready2Chart" style="height:300px"></div></div>
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">实时告警</div>
-              <div v-for="a in dashv2.alerts" :key="a.id" class="text-sm py-1.5 border-b flex gap-2">
-                <span :class="{'text-red-600':a.type==='vuln_overdue'||a.type==='critical_vuln','text-amber-600':a.type==='pending_approval'}">{{a.message}}</span></div>
-            </div>
-          </div>
-        </div>
-
         <!-- 工作流审批 -->
-        <div v-if="view==='workflow'">
+        <div class="cra-page" v-if="view==='workflow'">
           <div class="flex gap-2 mb-4"><button @click="newWF" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">新建审批</button></div>
           <div class="bg-white rounded-xl shadow-sm">
-            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">标题</th><th>类型</th><th>状态</th><th>当前步骤</th><th>提交人</th><th>操作</th></tr></thead>
+            <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">标题</th><th>类型</th><th>状态</th><th>当前步骤</th><th>提交人</th><th>操作</th></tr></thead>
             <tbody><tr v-for="w in workflows" :key="w.id" class="border-b">
               <td class="py-2 px-4">{{w.title}}</td><td>{{w.ref_type}}</td>
               <td><span :class="wfStatusCls(w.status)">{{w.status}}</span></td>
@@ -352,15 +524,15 @@
         </div>
 
         <!-- 供应商门户 -->
-        <div v-if="view==='supplier'">
+        <div class="cra-page" v-if="view==='supplier'">
           <div class="flex gap-2 mb-4"><button @click="newSupplier" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">新增供应商</button></div>
           <div class="grid grid-cols-2 gap-4 mb-4">
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">供应商列表</div>
-              <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th>名称</th><th>类型</th><th>风险</th><th>操作</th></tr></thead>
+            <div class="cra-card p-5"><div class="font-medium mb-2">供应商列表</div>
+              <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th>名称</th><th>类型</th><th>风险</th><th>操作</th></tr></thead>
               <tbody><tr v-for="s in suppliers" :key="s.id" class="border-b"><td class="py-1">{{s.name}}</td><td>{{s.type}}</td><td>{{s.risk_level}}</td>
                 <td><button @click="grantSupplierAccess(s)" class="text-blue-600 text-xs mr-2">生成访问令牌</button><button @click="editSupplier(s)" class="text-slate-400 text-xs">编辑</button></td></tr></tbody></table></div>
-            <div class="bg-white rounded-xl p-4 shadow-sm"><div class="font-medium mb-2">供应商提交</div>
-              <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th>标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
+            <div class="cra-card p-5"><div class="font-medium mb-2">供应商提交</div>
+              <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th>标题</th><th>类型</th><th>状态</th><th>操作</th></tr></thead>
               <tbody><tr v-for="s in supplierSubs" :key="s.id" class="border-b"><td class="py-1">{{s.title}}</td><td>{{s.form_type}}</td><td>{{s.status}}</td>
                 <td><button v-if="s.status==='submitted'" @click="reviewSubmission(s,'approved')" class="text-emerald-600 text-xs">通过</button>
                   <button v-if="s.status==='submitted'" @click="reviewSubmission(s,'rejected')" class="text-red-500 text-xs ml-2">驳回</button></td></tr></tbody></table></div>
@@ -368,27 +540,27 @@
         </div>
 
         <!-- SBOM 管理 -->
-        <div v-if="view==='sbom'">
+        <div class="cra-page" v-if="view==='sbom'">
           <div class="flex gap-2 mb-4"><input type="file" @change="importSbom" class="text-sm"/><button @click="exportSbom" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm">导出 SBOM</button></div>
           <div class="bg-white rounded-xl shadow-sm">
-            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">文件名</th><th>格式</th><th>组件数</th><th>漏洞匹配</th><th>时间</th></tr></thead>
+            <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">文件名</th><th>格式</th><th>组件数</th><th>漏洞匹配</th><th>时间</th></tr></thead>
             <tbody><tr v-for="r in sbomRecords" :key="r.id" class="border-b"><td class="py-2 px-4">{{r.filename}}</td><td>{{r.format}}</td><td>{{r.component_count}}</td><td class="text-red-600">{{r.vuln_matched_count}}</td><td>{{fmtDate(r.created_at)}}</td></tr></tbody></table>
           </div>
         </div>
 
         <!-- 许可证扫描 -->
-        <div v-if="view==='license'">
+        <div class="cra-page" v-if="view==='license'">
           <div class="flex gap-2 mb-4"><button @click="runLicenseScan(false)" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm">快速扫描</button><button @click="runLicenseScan(true)" class="bg-amber-600 text-white px-4 py-2 rounded-lg text-sm">深度扫描</button></div>
           <div v-if="licenseResult" class="bg-white rounded-xl p-4 shadow-sm mb-4"><div class="font-medium">扫描结果: <span :class="'text-'+licenseRiskCls(licenseResult.risk_level)">{{licenseResult.risk_level}}</span></div>
             <div class="text-sm text-slate-500">依赖: {{licenseResult.total_deps}} | 冲突: {{licenseResult.conflicts}}</div></div>
           <div class="bg-white rounded-xl shadow-sm">
-            <table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">时间</th><th>类型</th><th>依赖数</th><th>风险</th><th>冲突</th></tr></thead>
+            <table class="cra-table"><thead><tr class="text-left text-slate-500 border-b"><th class="py-2 px-4">时间</th><th>类型</th><th>依赖数</th><th>风险</th><th>冲突</th></tr></thead>
             <tbody><tr v-for="r in licenseScans" :key="r.id" class="border-b"><td class="py-2 px-4">{{fmtDate(r.created_at)}}</td><td>{{r.scan_type}}</td><td>{{r.total_deps}}</td><td>{{r.risk_level}}</td><td>{{r.conflicts_error+r.conflicts_warning}}</td></tr></tbody></table>
           </div>
         </div>
 
         <!-- 多法规 -->
-        <div v-if="view==='regulation'">
+        <div class="cra-page" v-if="view==='regulation'">
           <div class="grid grid-cols-3 gap-4">
             <div v-for="r in regulations" :key="r.id" class="bg-white rounded-xl p-4 shadow-sm cursor-pointer hover:shadow-md" @click="switchRegulation(r)">
               <div class="font-bold text-lg">{{r.name}}</div><div class="text-xs text-slate-500 mb-2">{{r.full_name}}</div>
@@ -399,7 +571,7 @@
         </div>
 
         <!-- 项目详情：卡片网格 -->
-        <div v-if="view==='projects'">
+        <div class="cra-page" v-if="view==='projects'">
           <div class="flex justify-between items-center mb-4">
             <div class="text-lg font-semibold">项目详情总览</div>
             <div class="text-sm text-slate-500">{{projectList.length}} 个项目</div>
@@ -482,13 +654,13 @@
         </div>
 
         <!-- 系统管理：用户管理 -->
-        <div v-if="view==='admin'">
+        <div class="cra-page" v-if="view==='admin'">
           <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
             <div class="flex justify-between items-center mb-4">
               <div class="font-medium text-lg">用户管理</div>
               <button @click="newUserModal" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">+ 新建用户</button>
             </div>
-            <table class="w-full text-sm">
+            <table class="cra-table">
               <thead><tr class="text-left text-slate-500 border-b">
                 <th class="py-2">ID</th><th>用户名</th><th>姓名</th><th>邮箱</th><th>角色</th><th>部门</th><th>状态</th><th class="text-right">操作</th>
               </tr></thead>
@@ -512,7 +684,7 @@
               </tbody>
             </table>
           </div>
-          <div class="bg-white rounded-xl p-4 shadow-sm">
+          <div class="cra-card p-5">
             <div class="font-medium mb-2 text-sm text-slate-500">角色权限说明</div>
             <div class="grid grid-cols-5 gap-3 text-xs">
               <div class="p-3 bg-red-50 rounded-lg"><div class="font-bold text-red-700">admin 管理员</div><div class="text-slate-500 mt-1">全部权限：CRUD所有数据、管理用户、系统配置</div></div>
@@ -525,18 +697,55 @@
         </div>
 
         <!-- AI 差距分析 -->
-        <div v-if="view==='ai'">
-          <div class="bg-white rounded-xl p-4 shadow-sm mb-4" v-if="curAssessment">
-            <div class="font-medium mb-2">当前评估: {{curAssessment.title}} (就绪度 {{curAssessment.readiness}}%)</div>
-            <button @click="runAiAnalysis" :disabled="aiRunning" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm disabled:opacity-50 hover:bg-slate-900">{{aiRunning?'分析中...':'AI 差距分析'}}</button>
+        <div class="cra-page" v-if="view==='ai'">
+          <div class="mb-4 flex items-center justify-between">
+            <div style="font-size:14px;color:var(--cra-text2)">每个已建立的项目自动同步生成差距分析对象，点击卡片生成或查看分析报告</div>
           </div>
-          <div v-if="aiResult" class="bg-white rounded-xl p-4 shadow-sm">
-            <div class="font-medium mb-2">分析结果 <span class="text-xs text-slate-400">({{aiResult.model}})</span></div>
-            <div v-html="aiHtml" class="doc-content text-sm"></div>
+          <div v-if="projectGaps.length===0" class="cra-card p-8 text-center" style="color:var(--cra-text3)">暂无项目，请先在「合规对象树」中创建产品或项目节点</div>
+          <div class="grid grid-cols-3 gap-4 cra-stagger">
+            <div v-for="p in projectGaps" :key="p.node_id" class="cra-card p-5">
+              <div class="flex items-center justify-between mb-3">
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--cra-text)">{{p.node_name}}</div>
+                  <div style="font-size:11px;color:var(--cra-text3)">{{p.node_type==='product'?'产品':'项目'}} · {{craClassLabel(p.cra_class)}}</div>
+                </div>
+                <span v-if="p.assessment_id" class="cra-num" style="font-size:24px;font-weight:800" :style="p.readiness>=70?'color:var(--cra-success)':p.readiness>=40?'color:var(--cra-warning)':'color:var(--cra-danger)'">{{p.readiness||0}}<span style="font-size:12px">%</span></span>
+                <span v-else style="font-size:11px;color:var(--cra-text3)">未评估</span>
+              </div>
+              <!-- 未评估 -->
+              <div v-if="!p.assessment_id" class="text-center py-4" style="font-size:12px;color:var(--cra-text3)">
+                暂无 CRA 评估<br>
+                <button @click="view='assess'" style="color:var(--cra-accent);font-size:12px;cursor:pointer;margin-top:4px">去发起评估 →</button>
+              </div>
+              <!-- 已评估 -->
+              <div v-else>
+                <div class="flex items-center gap-3 mb-3" style="font-size:12px">
+                  <span class="cra-badge cra-badge-info">{{p.assessment_status==='approved'?'已审批':p.assessment_status==='submitted'?'已提交':'草稿'}}</span>
+                  <span style="color:var(--cra-text3)">差距项 <b style="color:var(--cra-danger)" class="cra-num">{{p.gap_count}}</b> 个</span>
+                </div>
+                <!-- 已有报告 -->
+                <div v-if="p.has_ai_report" class="mb-3" style="background:var(--cra-bg,#F1F5F9);border-radius:8px;padding:10px;font-size:11px;color:var(--cra-text2);line-height:1.5">
+                  {{p.ai_report_preview}}...
+                </div>
+                <div class="flex gap-2">
+                  <button v-if="!p.has_ai_report" @click="runProjectGap(p)" :disabled="aiRunning" class="flex-1 text-xs text-white px-3 py-2 rounded-lg disabled:opacity-50" style="background:var(--cra-grad-accent);border:none">
+                    {{aiRunning?'分析中...':'生成差距分析'}}
+                  </button>
+                  <button v-if="p.has_ai_report" @click="viewProjectGapReport(p)" class="flex-1 text-xs px-3 py-2 rounded-lg" style="background:rgba(0,102,255,0.08);color:var(--cra-accent);border:1px solid rgba(0,102,255,0.2)">查看报告</button>
+                  <button v-if="p.has_ai_report" @click="runProjectGap(p)" :disabled="aiRunning" class="text-xs px-3 py-2 rounded-lg" style="background:rgba(245,158,11,0.08);color:var(--cra-warning);border:1px solid rgba(245,158,11,0.2)">重新分析</button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="bg-white rounded-xl p-4 shadow-sm mt-4" v-if="aiAnalyses.length">
-            <div class="font-medium mb-2">历史分析</div>
-            <div v-for="a in aiAnalyses" :key="a.id" class="text-sm py-1 border-b flex justify-between"><span>{{a.analysis_type}}</span><span>{{fmtDate(a.created_at)}}</span><span :class="a.status==='done'?'text-emerald-600':'text-slate-400'">{{a.status}}</span></div>
+          <!-- 报告查看弹窗 -->
+          <div v-if="aiResult" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="aiResult=null">
+            <div class="bg-white rounded-xl p-6 w-[700px] max-h-[85vh] overflow-y-auto">
+              <div class="flex justify-between items-center mb-4">
+                <div class="font-semibold text-lg">AI 差距分析报告</div>
+                <button @click="aiResult=null" style="color:var(--cra-text3);cursor:pointer">✕</button>
+              </div>
+              <div v-html="aiHtml" class="doc-content text-sm"></div>
+            </div>
           </div>
         </div>
 
@@ -546,21 +755,29 @@
 
   <!-- 通用模态框 -->
   <div v-if="modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="modal=null">
-    <div class="bg-white rounded-xl p-6 w-[480px] max-h-[85vh] overflow-y-auto">
-      <div class="font-semibold text-lg mb-4">{{modal.title}}</div>
+    <div :class="modal.isDemo?'bg-white rounded-xl p-6 w-[720px] max-h-[85vh] overflow-y-auto':'bg-white rounded-xl p-6 w-[480px] max-h-[85vh] overflow-y-auto'">
+      <div class="flex justify-between items-center mb-4">
+        <div class="font-semibold text-lg" style="color:var(--cra-text)">{{modal.title}}</div>
+        <button @click="modal=null" style="color:var(--cra-text3);cursor:pointer;font-size:18px">✕</button>
+      </div>
+      <!-- Demo 展示模式 -->
+      <div v-if="modal.isDemo" class="doc-content text-sm" style="background:var(--cra-bg,#F8FAFC);padding:20px;border-radius:8px;line-height:1.8" v-html="modal.demoHtml"></div>
+      <!-- 表单模式 -->
+      <template v-else>
       <div v-for="f in modal.fields" :key="f.key" class="mb-3">
-        <label class="text-sm text-slate-600">{{f.label}}</label>
-        <select v-if="f.type==='select'" v-model="modal.data[f.key]" class="w-full border rounded px-2 py-1.5 mt-1">
+        <label class="text-sm" style="color:var(--cra-text2)">{{f.label}}</label>
+        <select v-if="f.type==='select'" v-model="modal.data[f.key]" class="cra-input mt-1">
           <option v-for="o in f.options" :key="o.v" :value="o.v">{{o.l}}</option>
         </select>
-        <textarea v-else-if="f.type==='textarea'" v-model="modal.data[f.key]" class="w-full border rounded px-2 py-1.5 mt-1" rows="3"></textarea>
-        <input v-else v-model="modal.data[f.key]" :type="f.type||'text'" class="w-full border rounded px-2 py-1.5 mt-1"/>
+        <textarea v-else-if="f.type==='textarea'" v-model="modal.data[f.key]" class="cra-input mt-1" rows="3"></textarea>
+        <input v-else v-model="modal.data[f.key]" :type="f.type||'text'" class="cra-input mt-1"/>
       </div>
       <div class="flex justify-end gap-2 mt-4">
-        <button @click="modal=null" class="px-3 py-1.5 border rounded text-sm">取消</button>
-        <button @click="modal.onSave()" :disabled="loading" class="px-3 py-1.5 bg-blue-600 text-white rounded text-sm disabled:opacity-50">保存</button>
-        <div v-if="modal.error" class="text-red-500 text-xs mt-2">{{modal.error}}</div>
+        <button @click="modal=null" class="px-3 py-1.5 border rounded text-sm" style="border-color:var(--cra-border)">取消</button>
+        <button @click="modal.onSave()" :disabled="loading" class="px-3 py-1.5 text-white rounded text-sm disabled:opacity-50" style="background:var(--cra-grad-accent);border:none">保存</button>
+        <div v-if="modal.error" style="color:var(--cra-danger);font-size:12px;margin-top:8px">{{modal.error}}</div>
       </div>
+      </template>
     </div>
   </div>
 
@@ -673,7 +890,7 @@ createApp({
     }
     const token = ref(localStorage.getItem('token')||'');
     const user = reactive({});
-    const login = reactive({username:'admin',password:'admin123'});
+    const login = reactive({username:localStorage.getItem('cra_saved_user')||'',password:localStorage.getItem('cra_saved_pwd')||'',remember:localStorage.getItem('cra_remember')==='1'});
     const loginErr = ref(''); const toast = ref(''); const loading = ref(false); const view = ref('dashboard');
     const tree = ref([]); const curNode = ref(null); const overview = ref(null);
     const assessments = ref([]); const curAssessment = ref(null); const controlItems = ref([]);
@@ -685,18 +902,38 @@ createApp({
     const libId = ref(1);
     const sevChart=ref(null),readyChart=ref(null),radarChart=ref(null);
 
-    const menus = [
-      {k:'dashboard',label:'合规仪表盘',icon:'📊'},{k:'dashboard-v2',label:'高管态势',icon:'🏢'},
-      {k:'nodes',label:'合规对象树',icon:'🌲'},{k:'projects',label:'项目详情',icon:'📁'},
-      {k:'assess',label:'CRA 评估',icon:'✅'},{k:'samm',label:'SAMM 成熟度评估',icon:'🏅'},
-      {k:'vulns',label:'漏洞管理',icon:'🐞'},
-      {k:'risks',label:'风险登记册',icon:'⚠️'},{k:'documents',label:'文档与模板',icon:'📄'},
-      {k:'workflow',label:'工作流审批',icon:'✍️'},{k:'supplier',label:'供应商门户',icon:'🏭'},
-      {k:'sbom',label:'SBOM管理',icon:'📦'},{k:'license',label:'许可证扫描',icon:'🛡️'},
-      {k:'integrations',label:'工具集成',icon:'🔌'},{k:'regulation',label:'多法规',icon:'📋'},
-      {k:'ai',label:'AI差距分析',icon:'🤖'},{k:'audit',label:'审计日志',icon:'📜'},
-      {k:'admin',label:'系统管理',icon:'⚙️'},
+    const menuGroups = [
+      {title:'概览',items:[
+        {k:'dashboard',label:'合规仪表盘',icon:'cra-dashboard'},
+      ]},
+      {title:'合规管理',items:[
+        {k:'nodes',label:'合规对象树',icon:'cra-tree'},
+        {k:'projects',label:'项目详情',icon:'cra-folder'},
+        {k:'assess',label:'CRA 评估',icon:'cra-check'},
+        {k:'samm',label:'SAMM 成熟度',icon:'cra-medal'},
+      ]},
+      {title:'漏洞与风险',items:[
+        {k:'vulns',label:'漏洞管理',icon:'cra-bug'},
+        {k:'risks',label:'风险登记册',icon:'cra-alert'},
+        {k:'documents',label:'文档与模板',icon:'cra-doc'},
+        {k:'workflow',label:'工作流审批',icon:'cra-edit'},
+      ]},
+      {title:'供应链',items:[
+        {k:'supplier',label:'供应商门户',icon:'cra-truck'},
+        {k:'sbom',label:'SBOM管理',icon:'cra-box'},
+        {k:'license',label:'许可证扫描',icon:'cra-shield'},
+      ]},
+      {title:'工具与分析',items:[
+        {k:'integrations',label:'工具集成',icon:'cra-plug'},
+        {k:'regulation',label:'多法规',icon:'cra-list'},
+        {k:'ai',label:'AI差距分析',icon:'cra-bot'},
+      ]},
+      {title:'系统',items:[
+        {k:'audit',label:'审计日志',icon:'cra-scroll'},
+        {k:'admin',label:'系统管理',icon:'cra-settings'},
+      ]},
     ];
+    const menus = menuGroups.flatMap(g=>g.items);
     const menuLabel = computed(()=> (menus.find(m=>m.k===view.value)||{}).label || {assess:'CRA 评估',samm:'SAMM 成熟度评估',reports:'通报看板'}[view.value]||'');
 
     async function api(method,url,body,isForm){
@@ -734,10 +971,12 @@ createApp({
         const r=await fetch(API+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd});
         if(!r.ok){loginErr.value='用户名或密码错误';return;}
         const d=await r.json();token.value=d.access_token;localStorage.setItem('token',d.access_token);
+        if(login.remember){localStorage.setItem('cra_saved_user',login.username);localStorage.setItem('cra_saved_pwd',login.password);localStorage.setItem('cra_remember','1');}
+        else{localStorage.removeItem('cra_saved_user');localStorage.removeItem('cra_saved_pwd');localStorage.removeItem('cra_remember');}
         await loadMe();initData();
       }catch(e){loginErr.value='登录失败';}
     }
-    function logout(){token.value='';localStorage.removeItem('token');}
+    function logout(){token.value='';localStorage.removeItem('token');localStorage.removeItem('cra_saved_user');localStorage.removeItem('cra_saved_pwd');localStorage.removeItem('cra_remember');}
     async function loadMe(){Object.assign(user,await api('GET','/api/auth/me'));}
 
     function roleLabel(r){return {admin:'管理员',manager:'合规经理',assessor:'评估员',auditor:'审计员',viewer:'只读'}[r]||r;}
@@ -922,21 +1161,27 @@ createApp({
 
     // ── 漏洞 ──
     function newVuln(){
+      const today=new Date().toISOString().slice(0,10);
       modal.value={title:'录入漏洞',fields:[
         {key:'title',label:'标题'},{key:'cve_id',label:'CVE 编号'},
         {key:'severity',label:'严重度',type:'select',options:[{v:'critical',l:'严重'},{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}]},
         {key:'cvss_score',label:'CVSS 分值',type:'number'},{key:'component',label:'受影响组件'},
-        {key:'exploited',label:'是否已被利用(true/false)',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]},
-        {key:'description',label:'描述',type:'textarea'}],
-        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,description:'',source:'manual',node_id:curNode.value.id},
+        {key:'exploited',label:'是否已被利用',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]},
+        {key:'first_seen_at',label:'首次发现日期',type:'date'},
+        {key:'description',label:'描述',type:'textarea'},
+        {key:'note',label:'备注',type:'textarea'}],
+        data:{title:'',cve_id:'',severity:'medium',cvss_score:0,component:'',exploited:false,first_seen_at:today,description:'',note:'',source:'manual',node_id:curNode.value.id},
         error:null,
         onSave:async()=>{const e=validate(modal.value.data,[['title','漏洞标题不能为空']]);if(e){modal.value.error=e;return;}modal.value.error=null;await api('POST','/api/vulns',modal.value.data);modal.value=null;loadVulns();showToast('已录入');}};
     }
     function editVuln(v){
       modal.value={title:'编辑漏洞',fields:[
         {key:'status',label:'状态',type:'select',options:[{v:'open',l:'待处理'},{v:'triaged',l:'已定级'},{v:'fixing',l:'修复中'},{v:'fixed',l:'已修复'},{v:'disclosed',l:'已披露'},{v:'reported',l:'已通报'}]},
-        {key:'exploited',label:'已被利用',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]}],
-        data:{...v},error:null,onSave:async()=>{await api('PUT','/api/vulns/'+v.id,modal.value.data);modal.value=null;loadVulns();showToast('已更新');}};
+        {key:'exploited',label:'已被利用',type:'select',options:[{v:false,l:'否'},{v:true,l:'是（触发CRA通报）'}]},
+        {key:'severity',label:'严重度',type:'select',options:[{v:'critical',l:'严重'},{v:'high',l:'高'},{v:'medium',l:'中'},{v:'low',l:'低'}]},
+        {key:'first_seen_at',label:'首次发现日期',type:'date'},
+        {key:'note',label:'处理备注',type:'textarea'}],
+        data:{...v,first_seen_at:v.first_seen_at?v.first_seen_at.slice(0,10):''},error:null,onSave:async()=>{await api('PUT','/api/vulns/'+v.id,modal.value.data);modal.value=null;loadVulns();showToast('已更新');}};
     }
     async function sendReport(id){await api('POST',`/api/vulns/reports/${id}/send`);loadReports();showToast('已标记提交');}
 
@@ -952,7 +1197,6 @@ createApp({
 
     // ── 文档 ──
     async function genFromTemplate(t){
-      if(!curNode.value){showToast('请先在对象树选择节点');return;}
       const full=await api('GET','/api/templates/'+t.id);
       modal.value={title:'生成：'+t.name,
         fields:[{key:'title',label:'文档标题'},...full.fields.map(f=>({key:f.key,label:f.label}))],
@@ -962,9 +1206,17 @@ createApp({
           const e=validate(modal.value.data,[['title','文档标题不能为空']]);
           if(e){modal.value.error=e;return;} modal.value.error=null;
           const {title,...fields}=modal.value.data;
-          await api('POST','/api/documents/generate',{template_id:t.id,node_id:curNode.value.id,title,fields});
+          const payload={template_id:t.id,title,fields};
+          if(curNode.value)payload.node_id=curNode.value.id;
+          await api('POST','/api/documents/generate',payload);
           modal.value=null;loadDocs();showToast('文档已生成');view.value='documents';
         }};
+    }
+    async function viewDemo(t){
+      try{const r=await api('GET','/api/templates/'+t.id+'/demo');
+        modal.value={title:'示例：'+t.name,fields:[],data:{},error:null,isDemo:true,demoHtml:r.demo_html,
+          onSave:()=>{modal.value=null;}};
+      }catch(e){showToast('暂无示例');}
     }
     async function viewDoc(id){docView.value=await api('GET','/api/documents/'+id);}
     async function exportDoc(id,fmt){
@@ -1004,7 +1256,6 @@ createApp({
     // 视图切换时按需加载
     Vue.watch(view,(v)=>{
       if(v==='dashboard')loadDash();
-      if(v==='dashboard-v2')loadDashV2();
       if(v==='assess'||v==='samm'){curAssessment.value=null;loadAssessments();}
       if(v==='vulns')loadVulns();
       if(v==='reports')loadReports();
@@ -1015,7 +1266,7 @@ createApp({
       if(v==='sbom')loadSbomRecords();
       if(v==='license')loadLicenseScans();
       if(v==='regulation')loadRegulations();
-      if(v==='ai')loadAiAnalyses();
+      if(v==='ai'){loadAiAnalyses();loadProjectGaps();}
       if(v==='integrations')loadIntegrations();
       if(v==='audit')loadAudit();
       if(v==='admin')loadUsers();
@@ -1023,17 +1274,13 @@ createApp({
     });
 
     // ── V2 新增数据 ──
-    const dashv2=ref({alerts:[]}); const dashv2Cards=ref([]);
+    const dashv2=ref({alerts:[]});
     const ready2Chart=ref(null);
     const workflows=ref([]); const supplierSubs=ref([]);
     const sbomRecords=ref([]); const licenseScans=ref([]); const licenseResult=ref(null);
-    const regulations=ref([]); const aiAnalyses=ref([]); const aiResult=ref(null); const aiRunning=ref(false);
+    const regulations=ref([]); const aiAnalyses=ref([]); const aiResult=ref(null); const aiRunning=ref(false); const projectGaps=ref([]);
 
     // ── V2 新增方法 ──
-    async function loadDashV2(){const r=await api('GET','/api/dashboard-v2/overview');dashv2.value=r;
-      dashv2Cards.value=[{label:'合规产品',value:r.products_count,color:'text-blue-600'},{label:'严重漏洞',value:r.critical_vulns,color:'text-red-600'},{label:'逾期通报',value:r.overdue_reports,color:'text-amber-600'},{label:'待审批',value:r.pending_workflows,color:'text-slate-800'},{label:'平均就绪度',value:r.avg_readiness+'%',color:'text-emerald-600'}];
-      if(ready2Chart.value){const c=echarts.init(ready2Chart.value);c.setOption({tooltip:{},xAxis:{type:'value',max:100},yAxis:{type:'category',data:(r.product_readiness||[]).map(x=>x.name)},series:[{type:'bar',data:(r.product_readiness||[]).map(x=>({value:x.readiness,itemStyle:{color:x.readiness>=70?'#16a34a':x.readiness>=40?'#d97706':'#dc2626'}})),label:{show:true,position:'right',formatter:'{c}%'}}]});}}
-
     async function loadWorkflows(){workflows.value=await api('GET','/api/workflow/list');}
     function newWF(){
       modal.value={title:'新建审批',fields:[{key:'title',label:'标题'},{key:'ref_type',label:'类型',type:'select',options:[{v:'assessment',l:'评估'},{v:'document',l:'文档'},{v:'policy',l:'政策'}]}],
@@ -1083,6 +1330,10 @@ createApp({
     async function runAiAnalysis(){if(!curAssessment.value){showToast('请先选择一个评估');return;}aiRunning.value=true;
       try{const r=await api('POST',`/api/ai/gap-analysis/${curAssessment.value.id}`);aiResult.value=r;loadAiAnalyses();}finally{aiRunning.value=false;}}
     async function loadAiAnalyses(){const nid=curNode.value?curNode.value.id:(curAssessment.value?curAssessment.value.node_id:null);if(!nid){aiAnalyses.value=[];return;}aiAnalyses.value=await api('GET',`/api/ai/analyses?node_id=${nid}`);}
+    async function loadProjectGaps(){projectGaps.value=await api('GET','/api/ai/project-gaps');}
+    async function runProjectGap(p){if(!p.assessment_id){showToast('该项目暂无评估');return;}aiRunning.value=true;
+      try{const r=await api('POST',`/api/ai/gap-analysis/${p.assessment_id}`);aiResult.value=r;await loadProjectGaps();showToast('差距分析完成');}catch(e){showToast(e.message||'分析失败');}finally{aiRunning.value=false;}}
+    async function viewProjectGapReport(p){if(!p.ai_report_id)return;const r=await api('GET',`/api/ai/analyses?node_id=${p.node_id}`);const report=r.find(a=>a.id===p.ai_report_id);if(report){aiResult.value={result:'',model:report.model};const full=await api('GET',`/api/ai/report/${p.ai_report_id}`);aiResult.value=full;}}
     const aiHtml=computed(()=>aiResult.value?aiResult.value.result.replace(/\n/g,'<br>').replace(/## (.*)/g,'<h2>$1</h2>').replace(/\*\*(.*?)\*\*/g,'<b>$1</b>'):'');
 
     // 添加 RegulationFramework CRUD 路由 (简易)
@@ -1090,7 +1341,7 @@ createApp({
 
     onMounted(()=>{if(token.value){loadMe().then(initData).catch(()=>logout());}});
 
-    return {token,user,login,loginErr,toast,loading,view,menus,menuLabel,tree,curNode,overview,
+    return {token,user,login,loginErr,toast,loading,view,menus,menuGroups,menuLabel,tree,curNode,overview,
       assessments,curAssessment,controlItems,answers,remediation,vulns,reports,risks,
       templates,documents,integrations,auditLogs,dash,dashCards,modal,docView,
       sevChart,readyChart,radarChart,api,isGH,apiBase,saveApiBase,
@@ -1101,13 +1352,13 @@ createApp({
       selectNode,loadAssessments,openNodeModal,delNode,gotoAssess,newAssessment,openAssessment,
       setLevel,submitAssessment,loadRemediation,remediation,remediationToTask,newVuln,editVuln,sendReport,newRisk,
       isSamm,noteOf,saveNote,approveAssessment,
-      genFromTemplate,viewDoc,exportDoc,newIntegration,syncIntegration,
-      dashv2,dashv2Cards,ready2Chart,workflows,newWF,submitWF,approveWF,rejectWF,wfStatusCls,
+      genFromTemplate,viewDemo,viewDoc,exportDoc,newIntegration,syncIntegration,
+      dashv2,workflows,newWF,submitWF,approveWF,rejectWF,wfStatusCls,
       suppliers,loadSuppliers,newSupplier,editSupplier,supplierSubs,grantSupplierAccess,reviewSubmission,loadSupplierSubs,
       sbomRecords,importSbom,exportSbom,loadSbomRecords,
       licenseScans,licenseResult,runLicenseScan,loadLicenseScans,licenseRiskCls,
       regulations,loadRegulations,
-      aiAnalyses,aiResult,aiRunning,aiHtml,runAiAnalysis,loadAiAnalyses};
+      aiAnalyses,aiResult,aiRunning,aiHtml,projectGaps,runAiAnalysis,loadAiAnalyses,loadProjectGaps,runProjectGap,viewProjectGapReport};
   }
 }).mount('#app');
 </script>

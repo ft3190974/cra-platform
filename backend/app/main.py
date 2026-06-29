@@ -43,6 +43,19 @@ async def lifespan(app: FastAPI):
     from .database import SessionLocal
     db = SessionLocal()
     try:
+        # 轻量迁移：为 vulnerabilities 加列（SQLite 不支持 IF NOT EXISTS，用 inspect 判断）
+        from sqlalchemy import inspect, text
+        inspector = inspect(db.bind)
+        cols = {c["name"] for c in inspector.get_columns("vulnerabilities")}
+        for col, ddl in [("first_seen_at", "TEXT"), ("note", "TEXT DEFAULT ''")]:
+            if col not in cols:
+                db.execute(text(f"ALTER TABLE vulnerabilities ADD COLUMN {col} {ddl}"))
+                db.commit()
+        # DocTemplate 加 demo_html 列
+        doc_cols = {c["name"] for c in inspector.get_columns("doc_templates")}
+        if "demo_html" not in doc_cols:
+            db.execute(text("ALTER TABLE doc_templates ADD COLUMN demo_html TEXT DEFAULT ''"))
+            db.commit()
         seed_frameworks(db)
     finally:
         db.close()

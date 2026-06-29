@@ -180,7 +180,9 @@ class Vulnerability(Base, TimestampMixin):
     status: Mapped[str] = mapped_column(String(16), default="open")  # open/triaged/fixing/fixed/disclosed/reported
     exploited: Mapped[bool] = mapped_column(Boolean, default=False)
     found_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=now)
+    first_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)  # 首次发现时间
     fixed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    note: Mapped[str] = mapped_column(Text, default="")  # 处理备注
 
 
 class VulnReport(Base, TimestampMixin):
@@ -206,6 +208,7 @@ class DocTemplate(Base, TimestampMixin):
     stage: Mapped[str] = mapped_column(String(48), default="")
     body_html: Mapped[str] = mapped_column(Text, default="")
     fields: Mapped[list] = mapped_column(JSON, default=list)  # [{key,label,default}]
+    demo_html: Mapped[str] = mapped_column(Text, default="")  # 最佳实践示例
 
 
 class Document(Base, TimestampMixin):

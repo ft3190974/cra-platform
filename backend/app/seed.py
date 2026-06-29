@@ -8,6 +8,7 @@ from .auth import hash_password
 from .cra_content import DOMAINS
 from .database import Base, SessionLocal, engine
 from .doc_templates import TEMPLATES
+from .doc_demos import DEMOS
 from .models import (Assessment, Component, ControlDomain, ControlItem, ControlLibrary,
                      DocTemplate, Integration, OrgNode, Policy, SupportLifecycle, User)
 
@@ -119,8 +120,14 @@ def seed():
             if not _exists(db, DocTemplate, code=t["code"]):
                 db.add(DocTemplate(code=t["code"], name=t["name"], doc_type=t["doc_type"],
                                    cra_ref=t["cra_ref"], stage=t["stage"],
-                                   body_html=t["body_html"], fields=t["fields"]))
-                created_count += 1
+                                   body_html=t["body_html"], fields=t["fields"],
+                                   demo_html=DEMOS.get(t["code"], "")))
+        db.commit()
+        # 已有模板补 demo_html（迁移期）
+        for t in TEMPLATES:
+            existing = db.query(DocTemplate).filter_by(code=t["code"]).first()
+            if existing and not existing.demo_html:
+                existing.demo_html = DEMOS.get(t["code"], "")
         db.commit()
 
         # ── 演示对象树（幂等：按 code 判重）──

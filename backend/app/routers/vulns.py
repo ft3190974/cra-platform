@@ -1,5 +1,5 @@
 """漏洞管理 + CRA 第14条通报路由。"""
-from datetime import timezone
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
@@ -20,17 +20,34 @@ def list_vulns(node_id: int | None = None, db: Session = Depends(get_db),
     q = db.query(Vulnerability)
     if node_id is not None:
         q = q.filter(Vulnerability.node_id == node_id)
-    return [{"id": v.id, "node_id": v.node_id, "source": v.source, "cve_id": v.cve_id,
+    out = []
+    for v in q.order_by(Vulnerability.id.desc()).all():
+        # 计算未修复时长（天数）
+        first_seen = v.first_seen_at or v.found_at
+        if first_seen and first_seen.tzinfo is None:
+            first_seen = first_seen.replace(tzinfo=timezone.utc)
+        if v.fixed_at:
+            fixed = v.fixed_at if v.fixed_at.tzinfo else v.fixed_at.replace(tzinfo=timezone.utc)
+            unfixed_days = round((fixed - first_seen).total_seconds() / 86400, 1) if first_seen else None
+        else:
+            unfixed_days = round((now() - first_seen).total_seconds() / 86400, 1) if first_seen else None
+        out.append({"id": v.id, "node_id": v.node_id, "source": v.source, "cve_id": v.cve_id,
              "title": v.title, "severity": v.severity, "cvss_score": v.cvss_score,
              "cwe": v.cwe, "component": v.component, "status": v.status,
-             "exploited": v.exploited, "found_at": v.found_at}
-            for v in q.order_by(Vulnerability.id.desc()).all()]
+             "exploited": v.exploited, "found_at": v.found_at,
+             "first_seen_at": v.first_seen_at, "fixed_at": v.fixed_at,
+             "unfixed_days": unfixed_days, "note": v.note or ""})
+    return out
 
 
 @vulns_router.post("")
 def create_vuln(payload: VulnCreate, db: Session = Depends(get_db),
                 user: User = Depends(require_role("assessor"))):
-    v = Vulnerability(**payload.model_dump())
+    data = payload.model_dump()
+    # first_seen_at 默认设为 found_at
+    if not data.get("first_seen_at"):
+        data["first_seen_at"] = data.get("found_at") or now()
+    v = Vulnerability(**data)
     db.add(v); db.commit(); db.refresh(v)
     if v.exploited:
         create_report_deadlines(db, v)
@@ -45,8 +62,19 @@ def update_vuln(vid: int, payload: VulnUpdate, db: Session = Depends(get_db),
     if not v:
         raise HTTPException(404, "未找到漏洞")
     was_exploited = v.exploited
-    for k, val in payload.model_dump(exclude_unset=True).items():
+    old_status = v.status
+    data = payload.model_dump(exclude_unset=True)
+    # 转换 first_seen_at 字符串为 datetime（前端 date input 传 YYYY-MM-DD）
+    if "first_seen_at" in data and data["first_seen_at"]:
+        try:
+            data["first_seen_at"] = datetime.fromisoformat(data["first_seen_at"])
+        except (ValueError, TypeError):
+            pass  # 忽略无效日期
+    for k, val in data.items():
         setattr(v, k, val)
+    # 状态改为 fixed 时自动记录修复时间
+    if v.status == "fixed" and old_status != "fixed" and not v.fixed_at:
+        v.fixed_at = now()
     db.commit()
     if v.exploited and not was_exploited:
         create_report_deadlines(db, v)

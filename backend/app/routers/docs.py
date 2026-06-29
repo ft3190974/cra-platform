@@ -39,7 +39,17 @@ def get_template(tid: int, db: Session = Depends(get_db), _: User = Depends(get_
     if not t:
         raise HTTPException(404, "未找到模板")
     return {"id": t.id, "code": t.code, "name": t.name, "doc_type": t.doc_type,
-            "cra_ref": t.cra_ref, "body_html": t.body_html, "fields": t.fields}
+            "cra_ref": t.cra_ref, "body_html": t.body_html, "fields": t.fields,
+            "demo_html": t.demo_html or ""}
+
+
+@templates_router.get("/{tid}/demo")
+def get_template_demo(tid: int, db: Session = Depends(get_db), _: User = Depends(get_current_user)):
+    """获取文档模板的最佳实践示例。"""
+    t = db.get(DocTemplate, tid)
+    if not t:
+        raise HTTPException(404, "未找到模板")
+    return {"demo_html": t.demo_html or "", "name": t.name}
 
 
 # ── 文档 ──
