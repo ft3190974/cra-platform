@@ -398,6 +398,89 @@
           </div>
         </div>
 
+        <!-- 项目详情：卡片网格 -->
+        <div v-if="view==='projects'">
+          <div class="flex justify-between items-center mb-4">
+            <div class="text-lg font-semibold">项目详情总览</div>
+            <div class="text-sm text-slate-500">{{projectList.length}} 个项目</div>
+          </div>
+          <div class="grid grid-cols-4 gap-4" v-if="projectList.length">
+            <div v-for="p in projectList" :key="p.id" @click="openProjectDetail(p)"
+                 class="bg-white rounded-xl p-5 shadow-sm hover:shadow-md cursor-pointer border border-slate-100 hover:border-blue-300 transition-all group">
+              <!-- 项目名称 -->
+              <div class="font-semibold text-base text-slate-800 mb-1 truncate group-hover:text-blue-700">{{p.name}}</div>
+              <div class="text-xs text-slate-400 mb-3">{{p.code||'未编码'}}</div>
+              <!-- 合规就绪度进度条 -->
+              <div class="mb-3">
+                <div class="flex justify-between text-xs mb-1"><span class="text-slate-500">合规就绪度</span><span :class="(p.latest_readiness||0)>=70?'text-emerald-600':(p.latest_readiness||0)>=40?'text-amber-600':'text-red-500'" class="font-bold">{{p.latest_readiness??'—'}}%</span></div>
+                <div class="w-full bg-slate-100 rounded-full h-2"><div class="h-2 rounded-full transition-all" :style="{width:(p.latest_readiness||0)+'%',background:(p.latest_readiness||0)>=70?'#16a34a':(p.latest_readiness||0)>=40?'#d97706':'#dc2626'}"></div></div>
+              </div>
+              <!-- 统计 -->
+              <div class="grid grid-cols-3 gap-2 text-center border-t pt-3">
+                <div><div class="text-lg font-bold text-blue-600">{{p.assessment_count||0}}</div><div class="text-xs text-slate-400">评估</div></div>
+                <div><div class="text-lg font-bold" :class="p.vuln_open?'text-amber-600':'text-emerald-600'">{{p.vuln_open||0}}</div><div class="text-xs text-slate-400">漏洞</div></div>
+                <div><div class="text-lg font-bold text-red-600">{{p.vuln_critical||0}}</div><div class="text-xs text-slate-400">严重</div></div>
+              </div>
+              <!-- 下属产品数 -->
+              <div class="text-xs text-slate-400 mt-2 text-center">{{p.child_count||0}} 个子产品</div>
+            </div>
+          </div>
+          <div v-else class="text-center text-slate-400 py-20">
+            <div class="text-5xl mb-4">📁</div>
+            <div class="text-lg">暂无项目数据</div>
+            <div class="text-sm mt-2">请先在「合规对象树」中创建项目节点</div>
+          </div>
+        </div>
+
+        <!-- 项目详情弹窗 -->
+        <div v-if="projectDetail" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50" @click.self="projectDetail=null">
+          <div class="bg-white rounded-xl p-6 w-[700px] max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-start mb-4">
+              <div>
+                <div class="text-xl font-bold">{{projectDetail.name}}</div>
+                <div class="text-sm text-slate-500">{{projectDetail.code}} · {{craClassLabel(projectDetail.cra_class)}}</div>
+              </div>
+              <button @click="projectDetail=null" class="text-slate-400 hover:text-slate-600 text-xl">&times;</button>
+            </div>
+            <!-- 进度概览 -->
+            <div class="grid grid-cols-4 gap-3 mb-4">
+              <div class="bg-blue-50 rounded-lg p-3 text-center"><div class="text-2xl font-bold text-blue-600">{{projectDetail.latest_readiness??'—'}}%</div><div class="text-xs text-slate-500">合规就绪度</div></div>
+              <div class="bg-emerald-50 rounded-lg p-3 text-center"><div class="text-2xl font-bold text-emerald-600">{{projectDetail.latest_score??'—'}}</div><div class="text-xs text-slate-500">成熟度评分</div></div>
+              <div class="bg-amber-50 rounded-lg p-3 text-center"><div class="text-2xl font-bold text-amber-600">{{projectDetail.vuln_open}}</div><div class="text-xs text-slate-500">未关闭漏洞</div></div>
+              <div class="bg-red-50 rounded-lg p-3 text-center"><div class="text-2xl font-bold text-red-600">{{projectDetail.vuln_critical}}</div><div class="text-xs text-slate-500">严重漏洞</div></div>
+            </div>
+            <!-- 就绪度大进度条 -->
+            <div class="mb-4 p-4 bg-slate-50 rounded-lg">
+              <div class="flex justify-between text-sm mb-2"><span>合规就绪度进度</span><span class="font-bold">{{projectDetail.latest_readiness??0}}%</span></div>
+              <div class="w-full bg-slate-200 rounded-full h-4"><div class="h-4 rounded-full flex items-center justify-end pr-2 text-xs text-white font-bold transition-all" :style="{width:(projectDetail.latest_readiness||0)+'%',background:'linear-gradient(90deg,#2563eb,#16a34a)'}"></div></div>
+              <div class="flex justify-between text-xs text-slate-400 mt-1"><span>0%</span><span>达标线 70%</span><span>100%</span></div>
+            </div>
+            <!-- 详细信息 -->
+            <div class="grid grid-cols-2 gap-4">
+              <div class="border rounded-lg p-4">
+                <div class="font-medium text-sm mb-2">📋 评估信息</div>
+                <div class="text-xs text-slate-500 space-y-1">
+                  <div>评估次数：<span class="font-medium text-slate-700">{{projectDetail.assessment_count}}</span></div>
+                  <div>最近评分：<span class="font-medium text-slate-700">{{projectDetail.latest_score??'暂无'}}</span></div>
+                  <div>子产品数：<span class="font-medium text-slate-700">{{projectDetail.child_count}}</span></div>
+                </div>
+              </div>
+              <div class="border rounded-lg p-4">
+                <div class="font-medium text-sm mb-2">🛡️ 漏洞统计</div>
+                <div class="text-xs text-slate-500 space-y-1">
+                  <div>漏洞总数：<span class="font-medium text-slate-700">{{projectDetail.vuln_total}}</span></div>
+                  <div>未关闭：<span class="font-medium" :class="projectDetail.vuln_open?'text-amber-600':'text-emerald-600'">{{projectDetail.vuln_open}}</span></div>
+                  <div>严重漏洞：<span class="font-medium text-red-600">{{projectDetail.vuln_critical}}</span></div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-4 flex gap-2">
+              <button @click="projectDetail=null;view='nodes';selectNode({id:projectDetail.id})" class="bg-blue-600 text-white px-4 py-2 rounded text-sm">在对象树中打开</button>
+              <button @click="projectDetail=null;view='assess';curNode={id:projectDetail.id,node_type:'project',name:projectDetail.name};loadAssessments()" class="border px-4 py-2 rounded text-sm">查看评估</button>
+            </div>
+          </div>
+        </div>
+
         <!-- 系统管理：用户管理 -->
         <div v-if="view==='admin'">
           <div class="bg-white rounded-xl p-4 shadow-sm mb-4">
@@ -604,7 +687,7 @@ createApp({
 
     const menus = [
       {k:'dashboard',label:'合规仪表盘',icon:'📊'},{k:'dashboard-v2',label:'高管态势',icon:'🏢'},
-      {k:'nodes',label:'合规对象树',icon:'🌲'},
+      {k:'nodes',label:'合规对象树',icon:'🌲'},{k:'projects',label:'项目详情',icon:'📁'},
       {k:'assess',label:'CRA 评估',icon:'✅'},{k:'samm',label:'SAMM 成熟度评估',icon:'🏅'},
       {k:'vulns',label:'漏洞管理',icon:'🐞'},
       {k:'risks',label:'风险登记册',icon:'⚠️'},{k:'documents',label:'文档与模板',icon:'📄'},
@@ -686,6 +769,12 @@ createApp({
     async function loadDocs(){documents.value=await api('GET','/api/documents'+(curNode.value?`?node_id=${curNode.value.id}`:''));}
     async function loadIntegrations(){integrations.value=await api('GET','/api/integrations');}
     async function loadAudit(){auditLogs.value=await api('GET','/api/audit');}
+
+    // ── 项目详情卡片 ──
+    const projectList = ref([]);
+    const projectDetail = ref(null);
+    async function loadProjects(){projectList.value=await api('GET','/api/nodes/projects');}
+    function openProjectDetail(p){projectDetail.value=p;}
 
     // ── 用户管理 ──
     const userList = ref([]);
@@ -930,6 +1019,7 @@ createApp({
       if(v==='integrations')loadIntegrations();
       if(v==='audit')loadAudit();
       if(v==='admin')loadUsers();
+      if(v==='projects')loadProjects();
     });
 
     // ── V2 新增数据 ──
@@ -1005,6 +1095,7 @@ createApp({
       templates,documents,integrations,auditLogs,dash,dashCards,modal,docView,
       sevChart,readyChart,radarChart,api,isGH,apiBase,saveApiBase,
       userList,loadUsers,newUserModal,editUserModal,resetPwdModal,toggleUserActive,deleteUserConfirm,
+      projectList,projectDetail,loadProjects,openProjectDetail,
       doLogin,logout,roleLabel,typeLabel,craClassLabel,statusLabel,vulnStatusLabel,
       sevLabel,sevClass,reportLabel,repStatusLabel,repStatusClass,fmtDate,
       selectNode,loadAssessments,openNodeModal,delNode,gotoAssess,newAssessment,openAssessment,
