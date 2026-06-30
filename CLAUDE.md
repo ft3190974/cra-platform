@@ -1,6 +1,7 @@
 # CRA 合规平台 — 开发规范
 
 ## 核心原则（每次改代码前必读）
+0. **收到报错先检查后端服务是否运行**：`curl -s http://127.0.0.1:8080/api/health`，如果没返回说明后端挂了。前端空白/打不开/加载中 90% 是因为后端进程未启动。必须先确认后端正常再排查前端。
 1. **改函数前先 grep 全量引用**：删除/重命名任何函数，必须先 `grep -n` 查看所有引用点，同步更新
 2. **改完用 node --check 验证 JS 语法**：每次修改 `frontend/index.html` 后必须验证
 3. **Python 后端修改后用 TestClient 验证**：改完 `backend/app/` 后必须跑 API 测试
@@ -46,6 +47,32 @@ cra-platform/
 cd backend && CRA_ALLOW_INSECURE_SECRET=true python -m uvicorn app.main:app --host 127.0.0.1 --port 8080
 ```
 - 默认账号：`admin / admin123`
+- 必须带两个环境变量：`CRA_ALLOW_INSECURE_SECRET=true` + `CRA_ALLOW_DEMO_ACCOUNTS=true`，否则服务拒绝启动
+
+## 前端 GET 缓存陷阱（GLM 分析）
+- **`api()` 函数缓存 GET 结果 30 秒**：`_cache` Map, TTL 30000ms
+- **空数组也会被缓存**：后端挂了返回 `[]`，缓存后 30 秒内刷新也看不到数据
+- **load 函数必须加 `cacheDel` + `try-catch`**：
+  ```js
+  async function loadDocs(){
+    cacheDel('/api/documents');  // 先清缓存
+    try {
+      documents.value = await api('GET','/api/documents?...');
+    } catch(e) {
+      console.error('loadDocs:', e);
+      documents.value = [];
+    }
+  }
+  ```
+- **写操作自动清全部缓存**：`_cache.clear()` 在 POST/PUT/DELETE 时调用
+
+## 经典故障排查顺序（GLM 方法论）
+1. `curl http://127.0.0.1:8080/api/health` — 确认后端活着
+2. `curl http://127.0.0.1:8080/api/xxx` — 确认具体 API 正常
+3. `node --check frontend/index.html` — 确认 JS 无语法错误
+4. 检查浏览器 Console — 看运行时错误
+5. 检查 Vue return — 所有 @click 函数是否都在 return 中
+6. grep 死代码 — 确认没有引用已删除的函数/变量
 - 环境变量 `CRA_ALLOW_INSECURE_SECRET=true` 跳过弱密钥检查（仅本地开发）
 
 ## 前端架构
